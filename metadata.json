@@ -1,0 +1,8 @@
+{
+  "name": "GameFix AI",
+  "description": "Expert gaming tech-support assistant for diagnosing and resolving PC and Console gaming issues, crashes, FPS drops, latency, and hardware settings.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
