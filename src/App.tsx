@@ -136,17 +136,23 @@ export default function App() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/chat', {
+      // Corrected to point to /api/fix matching our backend serverless function
+      const response = await fetch('/api/fix', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
+          prompt: text,
           userSpecs: includeSpecs ? userSpecs : undefined,
         }),
       });
 
       const data = await response.json();
-      const rawReply = data.reply || 'Diagnosis received.';
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Server responded with an error');
+      }
+
+      const rawReply = data.solution || 'Diagnosis received.';
       const parsed = parseAiResponse(rawReply);
 
       const aiMsg: ChatMessage = {
@@ -168,7 +174,7 @@ export default function App() {
       const errorMsg: ChatMessage = {
         id: `error-${Date.now()}`,
         role: 'assistant',
-        content: `**Quick Cause Assessment**: Diagnostic server communication timeout.\n\n**Step-by-Step Fix**:\n1. Verify your network connection.\n2. Ensure the dev server is active on port 3000.\n3. Try re-sending your gaming inquiry.`,
+        content: `**Quick Cause Assessment**: Diagnostic server communication timeout.\n\n**Step-by-Step Fix**:\n1. Verify your network connection.\n2. Ensure Vercel environment variables are set correctly.\n3. Try re-sending your gaming inquiry.`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         parsed: {
           quickCause: 'Diagnostic server communication timeout.',
