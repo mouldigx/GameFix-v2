@@ -67,7 +67,7 @@ export const MessageItem: React.FC<MessageItemProps> = ({
     return (
       <div className="flex flex-col items-end gap-1.5 animate-fadeIn select-text">
         <div className="bg-blue-600/20 border border-blue-500/30 text-blue-100 p-3.5 rounded-2xl rounded-tr-none max-w-[85%] sm:max-w-[75%] text-sm shadow-md">
-          <p className="whitespace-pre-wrap">{message.content}</p>
+          <p className="whitespace-pre-wrap break-words">{message.content}</p>
           {message.specsAttached?.gpu && (
             <div className="mt-2 pt-1.5 border-t border-blue-500/20 flex items-center gap-1.5 text-[10px] font-mono text-blue-300/80">
               <span>Attached Rig:</span>
@@ -179,7 +179,7 @@ export const MessageItem: React.FC<MessageItemProps> = ({
 
         {/* LEGACY FORMAT: Assessment */}
         {parsed?.quickCause && !parsed.quickFix ? (
-          <p className="font-semibold text-green-400 italic text-sm leading-relaxed">
+          <p className="font-semibold text-green-400 italic text-sm leading-relaxed break-words">
             <span className="text-green-500 font-mono not-italic mr-1.5 opacity-70">{'>'}</span>
             <TypewriterText 
               text={`Assessment: ${parsed.quickCause}`}
@@ -189,7 +189,7 @@ export const MessageItem: React.FC<MessageItemProps> = ({
             />
           </p>
         ) : !parsed?.quickFix && (
-          <div className="whitespace-pre-wrap text-slate-200 leading-relaxed font-medium">
+          <div className="whitespace-pre-wrap break-words text-slate-200 leading-relaxed font-medium">
             <TypewriterText 
               text={message.content}
               id={`${message.id}-content`}
