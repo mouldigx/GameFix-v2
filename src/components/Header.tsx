@@ -42,34 +42,34 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-30 bg-[#0c0c0e] border-b border-white/10 text-slate-100 select-none">
-      <div className="w-full px-4 sm:px-6 py-2.5">
-        <div className="flex items-center justify-between gap-4">
+      <div className="w-full px-2 sm:px-6 py-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-3 md:gap-4">
           {/* Logo & Brand */}
           <div
-            className="flex items-center gap-3 cursor-pointer group shrink-0"
+            className="flex items-center gap-2 cursor-pointer group shrink-0"
             onClick={() => setActiveTab('chat')}
           >
-            <div className="w-8 h-8 bg-green-500 rounded flex items-center justify-center shadow-[0_0_15px_rgba(34,197,94,0.4)] group-hover:scale-105 transition-transform">
-              <svg className="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 24 24">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-green-500 rounded flex items-center justify-center shadow-[0_0_15px_rgba(34,197,94,0.4)] group-hover:scale-105 transition-transform">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-black" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M21 16.5C21 16.88 20.79 17.21 20.47 17.38L12.57 21.82C12.41 21.94 12.21 22 12 22C11.79 22 11.59 21.94 11.43 21.82L3.53 17.38C3.21 17.21 3 16.88 3 16.5V7.5C3 7.12 3.21 6.79 3.53 6.62L11.43 2.18C11.59 2.06 11.79 2 12 2C12.21 2 12.41 2.06 12.57 2.18L20.47 6.62C20.79 6.79 21 7.12 21 7.5V16.5Z" />
               </svg>
             </div>
             <div className="flex flex-col">
-              <h1 className="text-xl font-black tracking-tighter uppercase italic leading-none text-white">
+              <h1 className="text-lg sm:text-xl font-black tracking-tighter uppercase italic leading-none text-white">
                 GameFix <span className="text-green-500">AI</span>
               </h1>
-              <span className="text-[9px] font-mono text-slate-500 tracking-wider mt-0.5 hidden sm:block">
+              <span className="text-[8px] sm:text-[9px] font-mono text-slate-500 tracking-wider mt-0.5 hidden sm:block">
                 {isTn ? 'تشخيص و تصليح ألعاب الـ PC و Console' : 'HIGH DENSITY GAMING DIAGNOSTICS'}
               </span>
             </div>
           </div>
 
           {/* Navigation Tabs */}
-          <nav className="flex items-center gap-1 bg-[#18181b] p-1 rounded-lg border border-white/10">
+          <nav className="flex items-center gap-1 bg-[#18181b] p-1 rounded-lg border border-white/10 overflow-x-auto scrollbar-hide order-last md:order-none w-full md:w-auto">
             <button
               id="nav-tab-chat"
               onClick={() => setActiveTab('chat')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold uppercase tracking-wider transition-all ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-[10px] sm:text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap shrink-0 ${
                 activeTab === 'chat'
                   ? 'bg-green-500 text-black font-bold shadow-[0_0_10px_rgba(34,197,94,0.3)]'
                   : 'text-slate-400 hover:text-white hover:bg-white/5'
@@ -82,7 +82,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               id="nav-tab-optimizer"
               onClick={() => setActiveTab('optimizer')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold uppercase tracking-wider transition-all ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-[10px] sm:text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap shrink-0 ${
                 activeTab === 'optimizer'
                   ? 'bg-green-500 text-black font-bold shadow-[0_0_10px_rgba(34,197,94,0.3)]'
                   : 'text-slate-400 hover:text-white hover:bg-white/5'
@@ -95,7 +95,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               id="nav-tab-fixes"
               onClick={() => setActiveTab('fixes')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold uppercase tracking-wider transition-all ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-[10px] sm:text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap shrink-0 ${
                 activeTab === 'fixes'
                   ? 'bg-green-500 text-black font-bold shadow-[0_0_10px_rgba(34,197,94,0.3)]'
                   : 'text-slate-400 hover:text-white hover:bg-white/5'
@@ -108,7 +108,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               id="nav-tab-logs"
               onClick={() => setActiveTab('logs')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold uppercase tracking-wider transition-all ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-[10px] sm:text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap shrink-0 ${
                 activeTab === 'logs'
                   ? 'bg-green-500 text-black font-bold shadow-[0_0_10px_rgba(34,197,94,0.3)]'
                   : 'text-slate-400 hover:text-white hover:bg-white/5'
@@ -120,7 +120,7 @@ export const Header: React.FC<HeaderProps> = ({
           </nav>
 
           {/* Right Status & Tools */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             {/* Quick Language Switcher */}
             <button
               id="language-switcher-btn"
