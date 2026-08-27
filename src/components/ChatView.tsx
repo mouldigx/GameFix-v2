@@ -186,7 +186,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
         </div>
 
         {/* Quick Game Presets */}
-        <div className="flex items-center gap-2 mb-2.5 overflow-x-auto pb-1 scrollbar-hide px-1">
+        <div id="quick-game-presets" className="flex items-center gap-2 mb-2.5 overflow-x-auto pb-1 scrollbar-hide px-1">
           {['Valorant', 'GTA V', 'CS2', 'Warzone', 'Fortnite', 'Cyberpunk'].map(game => (
             <button
               key={game}
