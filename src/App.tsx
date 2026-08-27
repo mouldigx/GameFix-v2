@@ -37,29 +37,6 @@ const INITIAL_GREETING_TN: ChatMessage = {
 };
 
 export default function App() {
-  // Theme state integrated directly
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
-    const saved = localStorage.getItem('gamefix-theme');
-    if (saved === 'light' || saved === 'dark') return saved;
-    return 'dark';
-  });
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-      root.classList.remove('light');
-    } else {
-      root.classList.add('light');
-      root.classList.remove('dark');
-    }
-    localStorage.setItem('gamefix-theme', theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
-  };
-
   const [activeTab, setActiveTab] = useState<'chat' | 'optimizer' | 'fixes' | 'logs'>('chat');
   const [isSpecsModalOpen, setIsSpecsModalOpen] = useState(false);
   const [audioMuted, setAudioMuted] = useState(true);
@@ -236,18 +213,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-full bg-slate-50 dark:bg-[#09090b] text-slate-900 dark:text-slate-100 font-sans overflow-hidden select-text transition-colors duration-200">
-      
-      {/* Theme Switcher Quick Button */}
-      <div className="absolute top-2 right-4 z-50 flex items-center gap-2">
-        <button
-          onClick={toggleTheme}
-          className="px-2.5 py-1 text-xs rounded-md bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:bg-slate-300 dark:hover:bg-slate-700 transition-all shadow-sm flex items-center gap-1.5"
-        >
-          {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
-        </button>
-      </div>
-
+    <div className="flex flex-col h-screen w-full bg-[#09090b] text-slate-100 font-sans overflow-hidden select-text">
       {/* Top High Density Header */}
       <Header
         activeTab={activeTab}
@@ -265,7 +231,7 @@ export default function App() {
 
       {/* Main Cockpit Layout */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left Aside */}
+        {/* Left Aside: Hardware Profile & Quick Sessions / Presets */}
         <LeftSidebar
           userSpecs={userSpecs}
           onOpenSpecsModal={() => setIsSpecsModalOpen(true)}
@@ -279,7 +245,7 @@ export default function App() {
         />
 
         {/* Center Workspace Section */}
-        <main className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-gradient-to-b from-slate-100 dark:from-[#0f172a]/20 to-transparent">
+        <main className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-gradient-to-b from-[#0f172a]/20 to-transparent">
           {activeTab === 'chat' && (
             <ChatView
               messages={messages}
@@ -304,7 +270,7 @@ export default function App() {
           {activeTab === 'logs' && <CrashLogScanner userSpecs={userSpecs} />}
         </main>
 
-        {/* Right Aside */}
+        {/* Right Aside: Real-Time Telemetry Monitor */}
         {showTelemetry && (
           <div className="hidden xl:flex">
             <TelemetrySidebar
