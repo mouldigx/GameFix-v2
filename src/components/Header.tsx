@@ -30,6 +30,15 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleUiLang,
 }) => {
   const isTn = uiLang === 'tn';
+  const [bump, setBump] = React.useState(false);
+
+  React.useEffect(() => {
+    if (resolvedCount > 0) {
+      setBump(true);
+      const t = setTimeout(() => setBump(false), 500);
+      return () => clearTimeout(t);
+    }
+  }, [resolvedCount]);
 
   return (
     <header className="sticky top-0 z-30 bg-[#0c0c0e] border-b border-white/10 text-slate-100 select-none">
@@ -127,7 +136,11 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Resolved Counter Badge */}
             {resolvedCount > 0 && (
-              <div className="hidden lg:flex items-center gap-1 px-2.5 py-1 rounded bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-mono font-bold">
+              <div 
+                className={`hidden lg:flex items-center gap-1 px-2.5 py-1 rounded bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-mono font-bold transition-all duration-300 ${
+                  bump ? 'scale-110 shadow-[0_0_15px_rgba(34,197,94,0.6)] bg-green-500/20 text-green-300' : 'scale-100'
+                }`}
+              >
                 <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-ping"></span>
                 <span>{resolvedCount} {isTn ? 'تم حلها' : 'FIXED'}</span>
               </div>
