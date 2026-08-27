@@ -10,6 +10,7 @@ import { HardwareSpecsModal } from './components/HardwareSpecsModal';
 import { ChatMessage, UserHardwareSpecs } from './types';
 import { DEFAULT_USER_SPECS } from './data/gamingKnowledge';
 import { parseAiResponse, speakText } from './utils/aiHelpers';
+import { useTheme } from './hooks/useTheme';
 
 const INITIAL_GREETING_TN: ChatMessage = {
   id: 'welcome-msg',
@@ -37,6 +38,7 @@ const INITIAL_GREETING_TN: ChatMessage = {
 };
 
 export default function App() {
+  const { theme, toggleTheme } = useTheme();
   const [activeTab, setActiveTab] = useState<'chat' | 'optimizer' | 'fixes' | 'logs'>('chat');
   const [isSpecsModalOpen, setIsSpecsModalOpen] = useState(false);
   const [audioMuted, setAudioMuted] = useState(true);
@@ -100,7 +102,6 @@ export default function App() {
   // Global Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ctrl+Shift+L to toggle between Chat and Logs
       if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'l') {
         e.preventDefault();
         setActiveTab((prev) => (prev === 'chat' ? 'logs' : 'chat'));
@@ -113,7 +114,6 @@ export default function App() {
 
   // Send message to GameFix AI server
   const handleSendMessage = async (text: string, includeSpecs: boolean) => {
-    // Add to recent searches
     setRecentSearches((prev) => {
       const updated = [text, ...prev.filter((s) => s !== text)].slice(0, 5);
       try {
@@ -136,7 +136,6 @@ export default function App() {
     setIsLoading(true);
 
     try {
-      // Corrected to point to /api/fix matching our backend serverless function
       const response = await fetch('/api/fix', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -165,7 +164,6 @@ export default function App() {
 
       setMessages((prev) => [...prev, aiMsg]);
 
-      // If audio is unmuted, speak the quick cause
       if (!audioMuted && parsed.quickCause) {
         speakText(parsed.quickCause);
       }
@@ -217,7 +215,19 @@ export default function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-full bg-[#09090b] text-slate-100 font-sans overflow-hidden select-text">
+    <div className="flex flex-col h-screen w-full bg-slate-50 dark:bg-[#09090b] text-slate-900 dark:text-slate-100 font-sans overflow-hidden select-text transition-colors duration-200">
+      
+      {/* Theme Switcher Quick Bar floating on top-left or corner */}
+      <div className="absolute top-2 right-4 z-50 flex items-center gap-2">
+        <button
+          onClick={toggleTheme}
+          className="px-2.5 py-1 text-xs rounded-md bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:bg-slate-300 dark:hover:bg-slate-700 transition-all shadow-sm flex items-center gap-1.5"
+          title="تبديل المظهر (Dark / Light)"
+        >
+          {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
+        </button>
+      </div>
+
       {/* Top High Density Header */}
       <Header
         activeTab={activeTab}
@@ -249,7 +259,7 @@ export default function App() {
         />
 
         {/* Center Workspace Section */}
-        <main className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-gradient-to-b from-[#0f172a]/20 to-transparent">
+        <main className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-gradient-to-b from-slate-100 dark:from-[#0f172a]/20 to-transparent">
           {activeTab === 'chat' && (
             <ChatView
               messages={messages}
