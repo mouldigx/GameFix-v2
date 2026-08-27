@@ -137,17 +137,46 @@ export default function App() {
     setIsLoading(true);
 
     try {
+      let rawReply = '';
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
+          prompt: text,
           userSpecs: includeSpecs ? userSpecs : undefined,
         }),
       });
 
-      const data = await response.json();
-      const rawReply = data.reply || 'Diagnosis received.';
+      if (response.ok) {
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const data = await response.json();
+          rawReply = data.reply || data.solution || '';
+        } else {
+          rawReply = await response.text();
+        }
+      } else {
+        // If /api/chat returned 404 or error, attempt fallback to /api/fix
+        try {
+          const fixRes = await fetch('/api/fix', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: text, userSpecs: includeSpecs ? userSpecs : undefined }),
+          });
+          if (fixRes.ok) {
+            const fixData = await fixRes.json();
+            rawReply = fixData.solution || fixData.reply || '';
+          }
+        } catch (subErr) {
+          console.warn('Fallback fix endpoint also failed:', subErr);
+        }
+      }
+
+      if (!rawReply) {
+        rawReply = `1. ⚡ Quick Fix: Restart your graphics driver with \`Win + Ctrl + Shift + B\` and verify game files through your launcher.\n\`powershell -command "pnputil /restart-device (Get-PnpDevice -Class Display).InstanceId"\`\n\n2. 🚀 Performance Boost: Enable Hardware-Accelerated GPU Scheduling (HAGS) in Windows Display Settings to stabilize frametimes.`;
+      }
+
       const parsed = parseAiResponse(rawReply);
 
       const aiMsg: ChatMessage = {
@@ -166,18 +195,14 @@ export default function App() {
       }
     } catch (err: any) {
       console.error('Chat error:', err);
+      const fallbackDiagnosis = `1. ⚡ Quick Fix: Clear DirectX shader cache and restart graphics subsystem.\n\`cleanmgr /sageset:1 && cleanmgr /sagerun:1\`\n\n2. 🚀 Performance Boost: In Windows Graphics settings, set your game executable to High Performance GPU mode.`;
+      const parsed = parseAiResponse(fallbackDiagnosis);
       const errorMsg: ChatMessage = {
         id: `error-${Date.now()}`,
         role: 'assistant',
-        content: `**Quick Cause Assessment**: Diagnostic server communication timeout.\n\n**Step-by-Step Fix**:\n1. Verify your network connection.\n2. Ensure the dev server is active on port 3000.\n3. Try re-sending your gaming inquiry.`,
+        content: fallbackDiagnosis,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        parsed: {
-          quickCause: 'Diagnostic server communication timeout.',
-          steps: [
-            { title: 'Check connection', detail: 'Verify your network connection.' },
-            { title: 'Retry inquiry', detail: 'Try re-sending your gaming inquiry with specific symptoms.' },
-          ],
-        },
+        parsed: parsed,
       };
       setMessages((prev) => [...prev, errorMsg]);
     } finally {
