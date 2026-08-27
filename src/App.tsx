@@ -7,6 +7,7 @@ import { GameOptimizerView } from './components/GameOptimizerView';
 import { EmergencyFixesView } from './components/EmergencyFixesView';
 import { CrashLogScanner } from './components/CrashLogScanner';
 import { HardwareSpecsModal } from './components/HardwareSpecsModal';
+import { TourOverlay } from './components/TourOverlay';
 import { ChatMessage, UserHardwareSpecs } from './types';
 import { DEFAULT_USER_SPECS } from './data/gamingKnowledge';
 import { parseAiResponse, speakText } from './utils/aiHelpers';
@@ -100,6 +101,7 @@ export default function App() {
   // Global Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+Shift+L to toggle between Chat and Logs
       if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'l') {
         e.preventDefault();
         setActiveTab((prev) => (prev === 'chat' ? 'logs' : 'chat'));
@@ -112,6 +114,7 @@ export default function App() {
 
   // Send message to GameFix AI server
   const handleSendMessage = async (text: string, includeSpecs: boolean) => {
+    // Add to recent searches
     setRecentSearches((prev) => {
       const updated = [text, ...prev.filter((s) => s !== text)].slice(0, 5);
       try {
@@ -134,22 +137,17 @@ export default function App() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/fix', {
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          prompt: text,
+          messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
           userSpecs: includeSpecs ? userSpecs : undefined,
         }),
       });
 
       const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Server responded with an error');
-      }
-
-      const rawReply = data.solution || 'Diagnosis received.';
+      const rawReply = data.reply || 'Diagnosis received.';
       const parsed = parseAiResponse(rawReply);
 
       const aiMsg: ChatMessage = {
@@ -162,6 +160,7 @@ export default function App() {
 
       setMessages((prev) => [...prev, aiMsg]);
 
+      // If audio is unmuted, speak the quick cause
       if (!audioMuted && parsed.quickCause) {
         speakText(parsed.quickCause);
       }
@@ -170,7 +169,7 @@ export default function App() {
       const errorMsg: ChatMessage = {
         id: `error-${Date.now()}`,
         role: 'assistant',
-        content: `**Quick Cause Assessment**: Diagnostic server communication timeout.\n\n**Step-by-Step Fix**:\n1. Verify your network connection.\n2. Ensure Vercel environment variables are set correctly.\n3. Try re-sending your gaming inquiry.`,
+        content: `**Quick Cause Assessment**: Diagnostic server communication timeout.\n\n**Step-by-Step Fix**:\n1. Verify your network connection.\n2. Ensure the dev server is active on port 3000.\n3. Try re-sending your gaming inquiry.`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         parsed: {
           quickCause: 'Diagnostic server communication timeout.',
@@ -288,6 +287,8 @@ export default function App() {
         specs={userSpecs}
         onSaveSpecs={handleSaveSpecs}
       />
+
+      <TourOverlay />
     </div>
   );
 }
