@@ -275,8 +275,8 @@ export const MessageItem: React.FC<MessageItemProps> = ({
           </div>
         )}
 
-        {/* Mark Resolved Action */}
-        <div className="pt-2 border-t border-white/10 flex items-center justify-between">
+        {/* Mark Resolved Action & Copy Solution */}
+        <div className="pt-2 border-t border-white/10 flex flex-wrap items-center justify-between gap-2">
           {message.isResolved ? (
             <div className="flex items-center gap-1.5 text-xs text-green-400 font-mono font-bold">
               <CheckCircle2 className="w-4 h-4" />
@@ -291,6 +291,15 @@ export const MessageItem: React.FC<MessageItemProps> = ({
               <span>Did this fix your game? Mark as Solved</span>
             </button>
           )}
+
+          <button
+            onClick={() => handleCopy(message.content)}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-xs font-mono font-bold transition group"
+            title="Copy Solution"
+          >
+            {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5 group-hover:text-white" />}
+            <span className={copied ? "text-green-400" : ""}>{copied ? 'COPIED!' : 'Copy Solution'}</span>
+          </button>
         </div>
       </div>
 
