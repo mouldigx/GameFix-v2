@@ -185,6 +185,26 @@ export const ChatView: React.FC<ChatViewProps> = ({
           )}
         </div>
 
+        {/* Quick Game Presets */}
+        <div className="flex items-center gap-2 mb-2.5 overflow-x-auto pb-1 scrollbar-hide px-1">
+          {['Valorant', 'GTA V', 'CS2', 'Warzone', 'Fortnite', 'Cyberpunk'].map(game => (
+            <button
+              key={game}
+              type="button"
+              onClick={() => {
+                setInputText(prev => {
+                  if (prev.includes(`${game}: `)) return prev;
+                  return prev ? `${game}: ${prev}` : `${game}: `;
+                });
+                inputRef.current?.focus();
+              }}
+              className="px-2.5 py-1 rounded-md bg-[#18181b] border border-white/10 hover:border-green-500/40 hover:bg-white/10 text-[10px] font-mono text-slate-300 hover:text-green-400 transition whitespace-nowrap shrink-0 cursor-pointer"
+            >
+              {game}
+            </button>
+          ))}
+        </div>
+
         <form onSubmit={handleSubmit} className="relative">
           <input
             ref={inputRef}
