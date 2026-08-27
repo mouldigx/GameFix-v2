@@ -8,6 +8,7 @@ import { EmergencyFixesView } from './components/EmergencyFixesView';
 import { CrashLogScanner } from './components/CrashLogScanner';
 import { HardwareSpecsModal } from './components/HardwareSpecsModal';
 import { TourOverlay } from './components/TourOverlay';
+import { AdBanner } from './components/AdBanner';
 import { ChatMessage, UserHardwareSpecs } from './types';
 import { DEFAULT_USER_SPECS } from './data/gamingKnowledge';
 import { parseAiResponse, speakText } from './utils/aiHelpers';
@@ -304,6 +305,9 @@ export default function App() {
           </div>
         )}
       </div>
+
+      {/* Global Ad Banner (Sticky Footer) */}
+      <AdBanner />
 
       {/* Hardware Specs Modal */}
       <HardwareSpecsModal
