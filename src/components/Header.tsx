@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, Cpu, Flame, Terminal, FileText, Gamepad2, Volume2, VolumeX, Sparkles, Activity, Globe } from 'lucide-react';
+import { ShieldCheck, Cpu, Flame, Terminal, FileText, Gamepad2, Volume2, VolumeX, Sparkles, Activity, Globe, HelpCircle } from 'lucide-react';
 import { UserHardwareSpecs } from '../types';
 
 interface HeaderProps {
@@ -129,9 +129,19 @@ export const Header: React.FC<HeaderProps> = ({
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono transition group"
             >
               <Globe className="w-3.5 h-3.5 text-green-400 group-hover:rotate-12 transition-transform" />
-              <span className="font-bold text-slate-200">
+              <span className="font-bold text-slate-200 hidden sm:inline">
                 {isTn ? '🇹🇳 تونسي' : '🇺🇸 English'}
               </span>
+            </button>
+
+            {/* Tour Button */}
+            <button
+              id="start-tour-btn"
+              onClick={() => window.dispatchEvent(new Event('restart-tour'))}
+              title={isTn ? 'جولة سريعة في التطبيق' : 'Quick App Tour'}
+              className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-400 hover:text-green-400 hover:border-green-500/40 transition"
+            >
+              <HelpCircle className="w-4 h-4" />
             </button>
 
             {/* Resolved Counter Badge */}
