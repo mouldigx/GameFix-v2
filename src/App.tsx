@@ -212,7 +212,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-full bg-[#09090b] text-slate-100 font-sans overflow-hidden select-text">
+    <div className="flex flex-col h-[100dvh] w-full bg-[#09090b] text-slate-100 font-sans overflow-hidden select-text">
       {/* Top High Density Header */}
       <Header
         activeTab={activeTab}
