@@ -121,18 +121,19 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-app.post("/api/chat", async (req, res) => {
+app.post("/api/fix", async (req, res) => {
   try {
-    const { messages, userSpecs } = req.body;
-    const lastUserMessage = Array.isArray(messages) && messages.length > 0 
-      ? messages[messages.length - 1].content 
-      : "";
+    const { prompt, messages, userSpecs } = req.body || {};
+    let userQuery = prompt;
+    if (!userQuery && Array.isArray(messages) && messages.length > 0) {
+      const last = messages[messages.length - 1];
+      userQuery = typeof last === "string" ? last : last.content;
+    }
 
     const client = getGeminiClient();
-
     if (!client) {
-      const offlineReply = generateOfflineDiagnosis(lastUserMessage, userSpecs);
-      return res.json({ reply: offlineReply });
+      const offlineReply = generateOfflineDiagnosis(userQuery, userSpecs);
+      return res.json({ solution: offlineReply, reply: offlineReply });
     }
 
     let systemContext = "";
@@ -143,7 +144,7 @@ app.post("/api/chat", async (req, res) => {
     try {
       const response = await client.models.generateContent({
         model: "gemini-3.7-flash",
-        contents: messages,
+        contents: userQuery || "Game diagnostic request",
         config: {
           systemInstruction: SYSTEM_INSTRUCTION + (systemContext ? `\n\nAdditional Context:\n${systemContext}` : ""),
           temperature: 0.2,
@@ -151,7 +152,54 @@ app.post("/api/chat", async (req, res) => {
       });
 
       if (response.text) {
-        return res.json({ reply: response.text });
+        return res.json({ solution: response.text, reply: response.text });
+      }
+    } catch (apiError: any) {
+      console.warn("Gemini API call failed, using offline diagnosis:", apiError?.message || apiError);
+    }
+
+    const fallbackReply = generateOfflineDiagnosis(userQuery, userSpecs);
+    res.json({ solution: fallbackReply, reply: fallbackReply });
+  } catch (error: any) {
+    console.error("Fix API Critical Error:", error);
+    const fallbackReply = generateOfflineDiagnosis(req.body?.prompt || "", req.body?.userSpecs);
+    res.json({ solution: fallbackReply, reply: fallbackReply });
+  }
+});
+
+app.post("/api/chat", async (req, res) => {
+  try {
+    const { messages, prompt, userSpecs } = req.body;
+    let lastUserMessage = prompt || "";
+    if (!lastUserMessage && Array.isArray(messages) && messages.length > 0) {
+      const last = messages[messages.length - 1];
+      lastUserMessage = typeof last === "string" ? last : last.content;
+    }
+
+    const client = getGeminiClient();
+
+    if (!client) {
+      const offlineReply = generateOfflineDiagnosis(lastUserMessage, userSpecs);
+      return res.json({ reply: offlineReply, solution: offlineReply });
+    }
+
+    let systemContext = "";
+    if (userSpecs) {
+      systemContext = `User Hardware Specs:\n${JSON.stringify(userSpecs, null, 2)}`;
+    }
+
+    try {
+      const response = await client.models.generateContent({
+        model: "gemini-3.7-flash",
+        contents: messages || lastUserMessage || "Diagnostics",
+        config: {
+          systemInstruction: SYSTEM_INSTRUCTION + (systemContext ? `\n\nAdditional Context:\n${systemContext}` : ""),
+          temperature: 0.2,
+        },
+      });
+
+      if (response.text) {
+        return res.json({ reply: response.text, solution: response.text });
       }
     } catch (apiError: any) {
       console.warn("Gemini API call failed, using offline diagnostic engine:", apiError?.message || apiError);
@@ -159,11 +207,12 @@ app.post("/api/chat", async (req, res) => {
 
     // Fallback to offline rule-based diagnosis
     const fallbackReply = generateOfflineDiagnosis(lastUserMessage, userSpecs);
-    res.json({ reply: fallbackReply });
+    res.json({ reply: fallbackReply, solution: fallbackReply });
   } catch (error: any) {
     console.error("Chat API Critical Error:", error);
     res.json({
       reply: `1. ⚡ Quick Fix: Restart your graphics driver using the hotkey \`Win + Ctrl + Shift + B\` and verify game files.\n\`powershell -command "Restart-Service -Name '*Game*' -ErrorAction SilentlyContinue"\`\n\n2. 🚀 Performance Boost: Enable Hardware-Accelerated GPU Scheduling (HAGS) in Windows Display Settings for instant frametime stabilization.`,
+      solution: `1. ⚡ Quick Fix: Restart your graphics driver using the hotkey \`Win + Ctrl + Shift + B\` and verify game files.\n\`powershell -command "Restart-Service -Name '*Game*' -ErrorAction SilentlyContinue"\`\n\n2. 🚀 Performance Boost: Enable Hardware-Accelerated GPU Scheduling (HAGS) in Windows Display Settings for instant frametime stabilization.`,
     });
   }
 });
