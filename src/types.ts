@@ -1,3 +1,5 @@
+export type ThemeMode = 'deep-space' | 'high-contrast';
+
 export interface UserHardwareSpecs {
   gpu: string;
   cpu: string;
