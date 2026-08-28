@@ -12,6 +12,41 @@
   }
 }
 
+/* --- Theme Specific Styles --- */
+/* Deep Space Dark Theme */
+[data-theme="deep-space"] body,
+[data-theme="deep-space"] .theme-root {
+  background-color: #060814;
+  background-image: radial-gradient(circle at 50% -20%, rgba(30, 41, 89, 0.4) 0%, rgba(6, 8, 20, 1) 75%);
+}
+
+[data-theme="deep-space"] header {
+  background-color: rgba(9, 13, 30, 0.95);
+  border-bottom-color: rgba(99, 102, 241, 0.22);
+}
+
+[data-theme="deep-space"] aside {
+  background-color: rgba(9, 13, 30, 0.85);
+  border-color: rgba(99, 102, 241, 0.18);
+}
+
+/* Gaming High-Contrast Theme */
+[data-theme="high-contrast"] body,
+[data-theme="high-contrast"] .theme-root {
+  background-color: #000000;
+  background-image: none;
+}
+
+[data-theme="high-contrast"] header {
+  background-color: #000000;
+  border-bottom-color: rgba(255, 255, 255, 0.25);
+}
+
+[data-theme="high-contrast"] aside {
+  background-color: #050505;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
 @keyframes pulseGlow {
   0%, 100% {
     box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
@@ -58,3 +93,4 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #3f3f46;
 }
+
