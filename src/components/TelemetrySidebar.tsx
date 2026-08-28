@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Activity, Zap, Cpu, Sparkles, Sliders, Camera, Check, Copy, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { UserHardwareSpecs } from '../types';
+import { GpuDriverAlert } from './GpuDriverAlert';
 
 interface TelemetrySidebarProps {
   userSpecs: UserHardwareSpecs;
@@ -214,6 +215,12 @@ Health: ${healthStatus}`;
             {userSpecs.cpu}
           </div>
         </div>
+
+        {/* GPU Driver Health & Outdated Alert Component */}
+        <GpuDriverAlert
+          userSpecs={userSpecs}
+          onOpenSpecsModal={onOpenSpecsModal}
+        />
       </div>
 
       {/* Optimization Status */}
