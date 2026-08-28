@@ -9,7 +9,7 @@ import { CrashLogScanner } from './components/CrashLogScanner';
 import { HardwareSpecsModal } from './components/HardwareSpecsModal';
 import { TourOverlay } from './components/TourOverlay';
 import { AdBanner } from './components/AdBanner';
-import { ChatMessage, UserHardwareSpecs } from './types';
+import { ChatMessage, ThemeMode, UserHardwareSpecs } from './types';
 import { DEFAULT_USER_SPECS } from './data/gamingKnowledge';
 import { parseAiResponse, speakText } from './utils/aiHelpers';
 
@@ -48,6 +48,14 @@ export default function App() {
   const [uiLang, setUiLang] = useState<'tn' | 'en'>(() => {
     return (localStorage.getItem('gamefix_ui_lang') as 'tn' | 'en') || 'tn';
   });
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    return (localStorage.getItem('gamefix_theme') as ThemeMode) || 'deep-space';
+  });
+
+  // Apply theme to document
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   // Load specs from localStorage or use default
   const [userSpecs, setUserSpecs] = useState<UserHardwareSpecs>(() => {
@@ -228,6 +236,16 @@ export default function App() {
     }
   };
 
+  const handleToggleTheme = () => {
+    const nextTheme: ThemeMode = theme === 'deep-space' ? 'high-contrast' : 'deep-space';
+    setTheme(nextTheme);
+    try {
+      localStorage.setItem('gamefix_theme', nextTheme);
+    } catch (e) {
+      console.warn(e);
+    }
+  };
+
   const handleClearChat = () => {
     setMessages([INITIAL_GREETING_TN]);
     try {
@@ -238,7 +256,14 @@ export default function App() {
   };
 
   return (
-    <div className="flex flex-col h-[100dvh] w-full bg-[#09090b] text-slate-100 font-sans overflow-hidden select-text">
+    <div 
+      data-theme={theme}
+      className={`theme-root flex flex-col h-[100dvh] w-full font-sans overflow-hidden select-text transition-colors duration-200 ${
+        theme === 'deep-space' 
+          ? 'bg-[#060814] text-slate-100' 
+          : 'bg-black text-white'
+      }`}
+    >
       {/* Top High Density Header */}
       <Header
         activeTab={activeTab}
@@ -252,6 +277,8 @@ export default function App() {
         onToggleTelemetry={() => setShowTelemetry(!showTelemetry)}
         uiLang={uiLang}
         onToggleUiLang={handleToggleUiLang}
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
       />
 
       {/* Main Cockpit Layout */}
