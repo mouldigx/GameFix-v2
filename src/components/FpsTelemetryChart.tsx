@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  ResponsiveContainer,
   AreaChart,
   Area,
   XAxis,
@@ -11,13 +10,9 @@ import {
 import {
   TrendingUp,
   Play,
-  RotateCcw,
   Sparkles,
-  Zap,
   CheckCircle2,
   AlertTriangle,
-  History,
-  Flame,
 } from 'lucide-react';
 import { UserHardwareSpecs } from '../types';
 
@@ -107,6 +102,51 @@ export const FpsTelemetryChart: React.FC<FpsTelemetryChartProps> = ({
   const [historyData, setHistoryData] = useState<FpsDataPoint[]>(
     BENCHMARK_PROFILES.current_session.data
   );
+
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [containerSize, setContainerSize] = useState<{ width: number; height: number } | null>(null);
+
+  // ResizeObserver to ensure Recharts receives positive dimensions
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const measure = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        if (rect.width > 0) {
+          setContainerSize({
+            width: Math.floor(rect.width),
+            height: Math.max(140, Math.floor(rect.height || 140)),
+          });
+        }
+      }
+    };
+
+    measure();
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          const width = entry.contentRect.width;
+          const height = entry.contentRect.height;
+          if (width > 0) {
+            setContainerSize({
+              width: Math.floor(width),
+              height: Math.max(140, Math.floor(height || 140)),
+            });
+          }
+        }
+      });
+      resizeObserver.observe(containerRef.current);
+    }
+
+    window.addEventListener('resize', measure);
+    return () => {
+      window.removeEventListener('resize', measure);
+      if (resizeObserver) resizeObserver.disconnect();
+    };
+  }, []);
 
   // Parse target refresh rate from userSpecs if available (e.g. "144 Hz" -> 144)
   const targetRefresh = useMemo(() => {
@@ -244,9 +284,15 @@ export const FpsTelemetryChart: React.FC<FpsTelemetryChartProps> = ({
       </div>
 
       {/* Main Recharts Area Container */}
-      <div className="h-36 w-full min-w-0 bg-slate-950/80 rounded-lg p-1 border border-white/5 relative" style={{ minHeight: '144px', minWidth: '0px' }}>
-        <ResponsiveContainer width="100%" height={140} minWidth={0} minHeight={120} debounce={50}>
+      <div
+        ref={containerRef}
+        className="h-36 w-full min-w-0 bg-slate-950/80 rounded-lg p-1 border border-white/5 relative flex items-center justify-center overflow-hidden"
+        style={{ minHeight: '144px' }}
+      >
+        {containerSize && containerSize.width > 0 ? (
           <AreaChart
+            width={containerSize.width}
+            height={140}
             data={historyData}
             margin={{ top: 10, right: 8, left: -26, bottom: 0 }}
           >
@@ -293,7 +339,11 @@ export const FpsTelemetryChart: React.FC<FpsTelemetryChartProps> = ({
               activeDot={{ r: 4, fill: '#4ade80', stroke: '#052e16' }}
             />
           </AreaChart>
-        </ResponsiveContainer>
+        ) : (
+          <div className="flex items-center justify-center text-[10px] font-mono text-slate-500 animate-pulse">
+            CALIBRATING TELEMETRY SENSOR...
+          </div>
+        )}
       </div>
 
       {/* Live Session Telemetry Metrics Grid */}
