@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Mic, MicOff, Sparkles, RefreshCw, Zap, ShieldCheck } from 'lucide-react';
+import { Send, Mic, MicOff, Sparkles, RefreshCw, Zap, ShieldCheck, FileDown, Download, CheckCircle2 } from 'lucide-react';
 import { ChatMessage, UserHardwareSpecs } from '../types';
 import { MessageItem } from './MessageItem';
 import { STARTER_PROMPTS } from '../data/gamingKnowledge';
+import { exportChatResolutionToPdf } from '../utils/pdfExport';
 
 interface ChatViewProps {
   messages: ChatMessage[];
@@ -28,6 +29,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
   });
   const [includeSpecs, setIncludeSpecs] = useState(true);
   const [isListening, setIsListening] = useState(false);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -40,6 +42,17 @@ export const ChatView: React.FC<ChatViewProps> = ({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
+
+  const handleExportPdf = (specificMessageId?: string) => {
+    setIsExportingPdf(true);
+    try {
+      exportChatResolutionToPdf(messages, userSpecs, specificMessageId);
+    } catch (err) {
+      console.error('Failed to export PDF:', err);
+    } finally {
+      setTimeout(() => setIsExportingPdf(false), 800);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,6 +144,26 @@ export const ChatView: React.FC<ChatViewProps> = ({
           </div>
         )}
 
+        {/* Offline Crash Recovery Alert Banner when assistant messages exist */}
+        {messages.some((m) => m.role === 'assistant') && (
+          <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-lg bg-indigo-950/40 border border-indigo-500/30 text-indigo-200 text-xs font-mono">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-cyan-400 shrink-0" />
+              <span>
+                <strong className="text-white">Offline Crash Recovery:</strong> Export this troubleshooting guide to PDF before rebooting or entering Safe Mode.
+              </span>
+            </div>
+            <button
+              onClick={() => handleExportPdf()}
+              disabled={isExportingPdf}
+              className="flex items-center gap-1 px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[10px] tracking-wider uppercase transition cursor-pointer shrink-0 shadow-[0_0_10px_rgba(99,102,241,0.4)]"
+            >
+              <FileDown className={`w-3 h-3 ${isExportingPdf ? 'animate-spin' : ''}`} />
+              <span>{isExportingPdf ? 'Saving PDF...' : 'Download PDF Guide'}</span>
+            </button>
+          </div>
+        )}
+
         {/* Message Items */}
         {messages.map((msg) => (
           <MessageItem
@@ -139,6 +172,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
             onMarkResolved={onMarkResolved}
             audioMuted={audioMuted}
             onSelectPrompt={handleSelectStarter}
+            onExportPdf={handleExportPdf}
           />
         ))}
 
@@ -159,7 +193,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
 
       {/* High Density Command Input Bar */}
       <div className="p-3 sm:p-4 border-t border-white/10 bg-[#0c0c0e]">
-        <div className="flex items-center justify-between mb-1.5 px-1 text-[10px] font-mono text-slate-500">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5 px-1 text-[10px] font-mono text-slate-500">
           <label className="flex items-center gap-1.5 cursor-pointer text-slate-400 hover:text-slate-200 select-none">
             <input
               type="checkbox"
@@ -168,21 +202,57 @@ export const ChatView: React.FC<ChatViewProps> = ({
               className="rounded bg-[#18181b] border-white/10 text-green-500 focus:ring-0 h-3 w-3"
             />
             <span className="text-green-400 font-bold">RIG SPECS INJECTED:</span>
-            <span className="truncate max-w-[300px]">
+            <span className="truncate max-w-[240px] sm:max-w-[300px]">
               {userSpecs.gpu.replace('NVIDIA GeForce ', '')} • {userSpecs.ram.split(' ')[0]}
             </span>
           </label>
 
-          {messages.length > 2 && (
+          <div className="flex items-center gap-3">
+            {messages.some(m => m.role === 'assistant') && (
+              <button
+                type="button"
+                id="export-chat-pdf-btn"
+                onClick={() => handleExportPdf()}
+                disabled={isExportingPdf}
+                title="Download this entire resolution guide as an offline PDF in case of PC restarts or crashes"
+                className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-green-500/10 hover:bg-green-500/20 text-green-400 hover:text-green-300 border border-green-500/30 hover:border-green-500/50 transition cursor-pointer font-bold"
+              >
+                <FileDown className={`w-3 h-3 ${isExportingPdf ? 'animate-bounce' : ''}`} />
+                <span>{isExportingPdf ? 'GENERATING PDF...' : 'SAVE AS PDF (OFFLINE RUNBOOK)'}</span>
+              </button>
+            )}
+
+            {messages.length > 2 && (
+              <button
+                type="button"
+                onClick={onClearChat}
+                className="hover:text-rose-400 transition flex items-center gap-1"
+              >
+                <RefreshCw className="w-2.5 h-2.5" />
+                <span>CLEAR SESSION</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Quick Game Presets */}
+        <div id="quick-game-presets" className="flex items-center gap-2 mb-2.5 overflow-x-auto pb-1 scrollbar-hide px-1">
+          {['Valorant', 'GTA V', 'CS2', 'Warzone', 'Fortnite', 'Cyberpunk'].map(game => (
             <button
+              key={game}
               type="button"
-              onClick={onClearChat}
-              className="hover:text-rose-400 transition flex items-center gap-1"
+              onClick={() => {
+                setInputText(prev => {
+                  if (prev.includes(`${game}: `)) return prev;
+                  return prev ? `${game}: ${prev}` : `${game}: `;
+                });
+                inputRef.current?.focus();
+              }}
+              className="px-2.5 py-1 rounded-md bg-[#18181b] border border-white/10 hover:border-green-500/40 hover:bg-white/10 text-[10px] font-mono text-slate-300 hover:text-green-400 transition whitespace-nowrap shrink-0 cursor-pointer"
             >
-              <RefreshCw className="w-2.5 h-2.5" />
-              <span>CLEAR SESSION</span>
+              {game}
             </button>
-          )}
+          ))}
         </div>
 
         {/* Quick Game Presets */}

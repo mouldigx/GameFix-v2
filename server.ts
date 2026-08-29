@@ -42,79 +42,164 @@ function getGeminiClient(): GoogleGenAI | null {
   return geminiClient;
 }
 
-const SYSTEM_INSTRUCTION = `You are "GameFix AI", an ultra-fast, minimalist, and elite game performance diagnostic engine. Your core philosophy is "Extreme Simplicity & 1-Click Magic". 
+const SYSTEM_INSTRUCTION = `You are "GameFix AI", an elite, highly knowledgeable AI expert specialized in PC gaming performance optimization, fixing video game errors, troubleshooting crashes, low FPS, DLL missing errors, and driver issues across Windows (Windows 10/11) and popular gaming platforms (Steam, Epic Games, EA App, Riot Client).
 
-Tone: Direct, ultra-confident, friendly, and deeply knowledgeable, like an expert senior developer talking to a gamer. Keep it concise, lightning-fast, and punchy. No fluff.
+Your tone must be:
+- Direct, sharp, and highly technical yet easy to understand.
+- Friendly and tailored specifically for gamers.
 
-When a user inputs their game error, hardware specs, or lag issue, DO NOT give long generic text or boring lists. Give an immediate, highly polished, bulletproof solution divided STRICTLY into these two sections:
+Rules for your responses:
+1. Always identify the root cause of the game error or performance drop first in one short sentence.
+2. Provide clear, step-by-step troubleshooting solutions (numbered lists).
+3. If a command prompt (CMD), PowerShell command, registry fix, or file path is needed, format it clearly in backticks so the user can easily read and copy it.
+4. Keep explanations concise—gamers want fast, working solutions, not long essays.
+5. If the user mentions a specific game (e.g., GTA, Valorant, Fortnite, Shaiya, CS2, Cyberpunk 2077, etc.), tailor the fix specifically to that game's engine or known bugs.
 
-1. ⚡ Quick Fix: [Provide the actionable command or setting in 1 sentence]
-[Command snippet if applicable on the next line surrounded by backticks]
+Response Structure:
+**Root Cause**: [One concise technical sentence identifying the root cause]
 
-2. 🚀 Performance Boost: [The hidden trick or secret optimization]`;
+**Step-by-Step Fix**:
+1. **[Step 1 Title]**: [Clear actionable instruction]
+\`[Command / Registry / File Path in backticks if applicable]\`
+2. **[Step 2 Title]**: [Clear actionable instruction]
+\`[Command / Registry / File Path in backticks if applicable]\`
+3. **[Step 3 Title]**: [Clear actionable instruction]
+
+**Pro-Tip**: [A hidden trick, launch option, or config optimization]`;
 
 /**
- * High-accuracy offline diagnostic engine that provides instant 2-step fixes
+ * High-accuracy offline diagnostic engine that provides instant game-specific fixes
  * when Gemini API key is missing or encounters authentication limits.
  */
 function generateOfflineDiagnosis(userQuery: string, userSpecs?: any): string {
   const query = (userQuery || "").toLowerCase();
 
-  if (query.includes("van 9003") || query.includes("vanguard") || query.includes("tpm") || query.includes("secure boot") || query.includes("valorant")) {
-    return `1. ⚡ Quick Fix: Enable TPM 2.0 (AMD fTPM / Intel PTT) and UEFI Secure Boot in your BIOS, then set the Vanguard service (vgc) to Automatic startup in Windows.
-\`services.msc -> vgc -> Startup Type: Automatic\`
+  // 1. Shaiya MMORPG (Game.exe, Direct3D 9 legacy DLLs, 16-bit color / Windows 10/11 compatibility)
+  if (query.includes("shaiya") || query.includes("game.exe") || query.includes("d3dx9_30.dll") || query.includes("game.ini")) {
+    return `**Root Cause**: Shaiya runs on a legacy Direct3D 9 engine that conflicts with modern Windows 10/11 desktop window compositing, DPI scaling, and missing DirectX 9 runtime libraries.
 
-2. 🚀 Performance Boost: Disable 'Core Isolation / Memory Integrity' in Windows Defender Core Isolation settings to eliminate micro-stutters and input latency while Vanguard is active.`;
+**Step-by-Step Fix**:
+1. **Install DirectX 9.0c Legacy Runtimes**: Run the DirectX June 2010 redistributable installer to restore missing \`d3dx9_30.dll\` and Direct3D 9 binaries.
+\`winget install Microsoft.DirectX -e\`
+2. **Set Windows Compatibility Mode**: Right-click \`game.exe\` in the Shaiya installation folder -> **Properties** -> **Compatibility** -> Check **Run this program in compatibility mode for Windows 7** and check **Disable fullscreen optimizations**.
+\`C:\\Shaiya\\game.exe -> Properties -> Compatibility -> Run as Administrator\`
+3. **Fix High DPI Scaling & Resolution**: In the same Compatibility tab, click **Change high DPI settings** -> Check **Override high DPI scaling behavior** and set Scaling performed by to **Application**.
+
+**Pro-Tip**: Open \`CONFIG.INI\` in your Shaiya directory and lock \`COLOR_DEPTH=32\` and \`FULLSCREEN=0\` for flawless windowed borderless gameplay without crashes.`;
   }
 
-  if (query.includes("nvlddmkm") || query.includes("directx") || query.includes("dxgi") || query.includes("driver") || query.includes("device_removed")) {
-    return `1. ⚡ Quick Fix: Reset your display driver instantly with the hotkey or execute a clean DDU (Display Driver Uninstaller) driver wipe in Safe Mode.
-\`powershell -command "pnputil /restart-device (Get-PnpDevice -Class Display).InstanceId"\`
+  // 2. Valorant (VAN 9003, Vanguard, TPM 2.0, Secure Boot, VGC service)
+  if (query.includes("van 9003") || query.includes("vanguard") || query.includes("tpm") || query.includes("secure boot") || query.includes("valorant") || query.includes("van 1067")) {
+    return `**Root Cause**: Riot Vanguard anti-cheat requires active Hardware TPM 2.0 and UEFI Secure Boot enforcement in Windows 11 kernel mode.
 
-2. 🚀 Performance Boost: In NVIDIA Control Panel, set 'Power Management Mode' to 'Prefer Maximum Performance' and increase Shader Cache Size to '10 GB' to completely stop driver timeouts and texture popping.`;
+**Step-by-Step Fix**:
+1. **Enable UEFI Secure Boot & TPM 2.0**: Reboot into your BIOS/UEFI (F2/Del on boot), enable **AMD fTPM** (or **Intel PTT**) and set OS Type to **Windows UEFI Mode**.
+\`tpm.msc -> Status: The TPM is ready for use (Specification Version: 2.0)\`
+2. **Set Vanguard Service to Automatic**: Open Windows Services and force the Vanguard Kernel service (\`vgc\`) to start automatically with Windows.
+\`powershell -command "Set-Service -Name vgc -StartupType Automatic; Start-Service -Name vgc"\`
+3. **Allow Riot Client in Firewall**: Add Vanguard and Valorant binaries to Windows Defender Firewall exceptions.
+\`netsh advfirewall firewall add rule name="Riot Vanguard" dir=in action=allow program="C:\\Program Files\\Riot Vanguard\\vgc.exe" enable=yes\`
+
+**Pro-Tip**: Disable 'Core Isolation / Memory Integrity' in Windows Defender Core Isolation settings to prevent random frametime drops and micro-stutters while Vanguard is active.`;
   }
 
-  if (query.includes("30005") || query.includes("easy anti-cheat") || query.includes("eac") || query.includes("battleye") || query.includes("createfile")) {
-    return `1. ⚡ Quick Fix: Delete the locked EasyAntiCheat.sys driver file and let the game launcher regenerate a clean copy upon next launch.
-\`del /f /q "C:\\Program Files (x86)\\EasyAntiCheat\\EasyAntiCheat.sys"\`
+  // 3. GTA V / GTA Online / FiveM (ERR_GFX_D3D_INIT, citizenfx cache, heap limits)
+  if (query.includes("gta") || query.includes("fivem") || query.includes("err_gfx_d3d_init") || query.includes("scripthook") || query.includes("rockstar")) {
+    return `**Root Cause**: GTA V's RAGE engine crashed due to DirectX device initialization loss (ERR_GFX_D3D_INIT) or an overloaded GPU memory heap pool.
 
-2. 🚀 Performance Boost: Add your entire Game directory and Anti-Cheat folder to Windows Security 'Exclusions' list to prevent real-time antivirus disk locking during online matches.`;
+**Step-by-Step Fix**:
+1. **Force DirectX 11 in Game Config**: Navigate to your GTA Documents folder, edit \`settings.xml\`, and change DX_Version to 1 (DirectX 11).
+\`%USERPROFILE%\\Documents\\Rockstar Games\\GTA V\\settings.xml -> <DX_Version value="1" />\`
+2. **Clear FiveM / GTA Shader Cache**: Delete corrupted CitizenFX and shader caches to reset broken compiled assets.
+\`del /s /q /f "%localappdata%\\FiveM\\FiveM.app\\data\\cache\\*"\`
+3. **Install Heap Limit Adjuster**: If modding or on FiveM, install \`Packfile Limit Adjuster\` and \`Heap Limit Adjuster\` to prevent out-of-memory crash-to-desktop.
+
+**Pro-Tip**: Add \`-ignoredifferentvideocard -DX11 -high\` to your Steam / Epic Games launch arguments to prevent random D3D device loss.`;
   }
 
-  if (query.includes("0xc0000005") || query.includes("access violation") || query.includes("c0000005") || query.includes("crash to desktop") || query.includes("ctd")) {
-    return `1. ⚡ Quick Fix: Run Windows System File Checker and repair damaged Visual C++ runtime memory dependencies.
+  // 4. Fortnite (Unreal Engine 5 crash, DX12 crash, Easy Anti-Cheat / BattlEye)
+  if (query.includes("fortnite") || query.includes("unreal engine") || query.includes("d3d12") || query.includes("epic games")) {
+    return `**Root Cause**: Unreal Engine 5 encountered DirectX 12 PSO (Pipeline State Object) shader compilation timeout or corrupt cached game user settings.
+
+**Step-by-Step Fix**:
+1. **Switch to DirectX 11 / Performance Mode via Launch Options**: In Epic Games Launcher, go to **Settings** -> **Fortnite** -> Check **Additional Command Line Arguments** and enter:
+\`-d3d11 -NOVREFRESH -USEALLAVAILABLECORES\`
+2. **Reset Corrupted GameUserSettings**: Delete the Fortnite user config directory to force the engine to regenerate clean default bindings and rendering profiles.
+\`del /q /f "%localappdata%\\FortniteGame\\Saved\\Config\\WindowsClient\\GameUserSettings.ini"\`
+3. **Repair Easy Anti-Cheat Service**: Run the official EAC repair tool located in the Fortnite binaries directory.
+\`"C:\\Program Files\\Epic Games\\Fortnite\\FortniteGame\\Binaries\\Win64\\EasyAntiCheat\\EasyAntiCheat_EOS_Setup.exe" repair\`
+
+**Pro-Tip**: In Fortnite Video Settings, switch Rendering Mode to **Performance (Lower Graphical Fidelity)** and disable 'High-Resolution Textures' in Epic Games Launcher installation options to save 18GB of disk space and boost 40+ FPS.`;
+  }
+
+  // 5. Missing DLL Errors (vcruntime140.dll, msvcp140.dll, d3dx9_43.dll, xinput1_3.dll)
+  if (query.includes("dll") || query.includes("vcruntime") || query.includes("msvcp") || query.includes("d3dx") || query.includes("xinput") || query.includes("0xc000007b")) {
+    return `**Root Cause**: The game executable is failing to start because required Microsoft Visual C++ redistributable packages or DirectX runtime libraries are missing or corrupt.
+
+**Step-by-Step Fix**:
+1. **Install All-in-One Visual C++ Runtimes (2005 - 2022 x86 & x64)**: Run winget in PowerShell as Administrator to install all Visual C++ dependencies in one shot.
+\`winget install Microsoft.VCRedist.2015+.x64 -e && winget install Microsoft.VCRedist.2015+.x86 -e\`
+2. **Install DirectX End-User Runtimes (June 2010)**: Install the full DirectX legacy runtimes to fix missing \`d3dx9_43.dll\`, \`d3dx11_43.dll\`, and \`xinput1_3.dll\`.
+\`winget install Microsoft.DirectX -e\`
+3. **Repair Corrupted Windows System Files**: Scan and repair any damaged core OS DLL files in \`System32\`.
 \`sfc /scannow && DISM /Online /Cleanup-Image /RestoreHealth\`
 
-2. 🚀 Performance Boost: Disable full-screen optimizations in your game executable's Compatibility tab and turn off Discord/Steam hardware acceleration overlays.`;
+**Pro-Tip**: Never download individual DLL files from unofficial websites; always use official Microsoft redistributable packages to prevent security vulnerabilities and 0xc000007b entry-point crashes.`;
   }
 
-  if (query.includes("shader") || query.includes("stutter") || query.includes("freeze") || query.includes("fps drop") || query.includes("lag")) {
+  // 6. GPU Driver Crashes & DirectX Errors (nvlddmkm.sys, DXGI_ERROR_DEVICE_REMOVED, TDR crash)
+  if (query.includes("nvlddmkm") || query.includes("directx") || query.includes("dxgi") || query.includes("driver") || query.includes("device_removed") || query.includes("tdr")) {
+    return `**Root Cause**: Windows Display Driver Timeout Detection & Recovery (TDR) detected a GPU kernel stall, causing the graphics driver to crash and reset.
+
+**Step-by-Step Fix**:
+1. **Perform Clean Driver Installation via DDU**: Download Display Driver Uninstaller (DDU), boot into Windows Safe Mode, completely wipe old display drivers, and install the latest WHQL driver.
+\`DDU -> Clean and Restart -> Install NVIDIA GeForce / AMD Adrenalin WHQL Driver\`
+2. **Increase Windows TDR Delay in Registry**: Prevent Windows from killing the GPU driver during heavy shader loading by increasing the timeout threshold from 2s to 8s.
+\`reg add "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers" /v TdrDelay /t REG_DWORD /d 8 /f\`
+3. **Configure High Performance Power Mode**: In NVIDIA Control Panel -> **Manage 3D Settings** -> Set **Power Management Mode** to **Prefer Maximum Performance**.
+
+**Pro-Tip**: Set **Shader Cache Size** to **10 GB** or **Unlimited** in NVIDIA Control Panel to completely eliminate shader stutter in modern games.`;
+  }
+
+  // 7. General Crash to Desktop (CTD) & Access Violation (0xc0000005)
+  if (query.includes("0xc0000005") || query.includes("access violation") || query.includes("c0000005") || query.includes("crash to desktop") || query.includes("ctd")) {
+    return `**Root Cause**: Memory access violation (0xC0000005) caused by an invalid memory pointer, unstable RAM XMP/EXPO overclock, or third-party overlay hooks (Discord/Steam/RivaTuner).
+
+**Step-by-Step Fix**:
+1. **Disable Fullscreen Optimizations & Run as Admin**: Right-click the game \`.exe\` -> **Properties** -> **Compatibility** -> Check **Disable fullscreen optimizations** and **Run this program as an administrator**.
+\`Game.exe -> Properties -> Compatibility -> Disable fullscreen optimizations\`
+2. **Disable Discord & Steam In-Game Overlays**: In Discord Settings -> **Game Overlay** -> Toggle OFF. In Steam -> **Settings** -> **In Game** -> Uncheck **Enable the Steam Overlay while in-game**.
+3. **Verify Game File Integrity**: In Steam (Right-click game -> **Properties** -> **Installed Files** -> **Verify integrity**) or Epic Games Launcher (Three dots -> **Manage** -> **Verify**).
+
+**Pro-Tip**: Check Windows Reliability Monitor (\`perfmon /rel\`) to pinpoint the exact faulty \`.dll\` or \`.sys\` module responsible for the crash.`;
+  }
+
+  // 8. Low FPS, Micro-Stutters & Performance Drop
+  if (query.includes("shader") || query.includes("stutter") || query.includes("freeze") || query.includes("fps drop") || query.includes("lag") || query.includes("low fps")) {
     const gpuInfo = userSpecs?.gpu || "GPU";
-    return `1. ⚡ Quick Fix: Clear the compiled DirectX shader cache and enable Hardware-Accelerated GPU Scheduling (HAGS) in Windows Graphics Settings.
+    return `**Root Cause**: Micro-stutters and sudden FPS drops are caused by shader cache regeneration, CPU core parking, or improper frame pacing.
+
+**Step-by-Step Fix**:
+1. **Enable Hardware-Accelerated GPU Scheduling (HAGS)**: Open Windows Graphics Settings, turn ON **Hardware-Accelerated GPU Scheduling**, and restart your PC.
+\`ms-settings:display-advancedgraphics -> Hardware-accelerated GPU scheduling: ON\`
+2. **Clean Windows DirectX Shader Cache**: Clear corrupted shader caches to force a clean, optimal shader compile pass.
 \`cleanmgr /sageset:1 && cleanmgr /sagerun:1\`
+3. **Lock Framerate 3 FPS Below Refresh Rate**: In NVIDIA Control Panel or RivaTuner Statistics Server (RTSS), lock your Max Frame Rate to 3 FPS below your monitor's Hz (e.g., 141 FPS for 144Hz, 237 FPS for 240Hz) with G-Sync/FreeSync enabled.
 
-2. 🚀 Performance Boost: Lock your maximum framerate in RTSS (RivaTuner) or GPU driver to exactly 3 FPS below your monitor's refresh rate with G-Sync/FreeSync enabled for ultra-smooth frametime pacing on your ${gpuInfo}.`;
+**Pro-Tip**: Add launch argument \`-high -threads 8 +mat_queue_mode 2\` to Steam/Epic launch options to maximize multi-threading on your ${gpuInfo} setup.`;
   }
 
-  if (query.includes("ping") || query.includes("packet loss") || query.includes("nat") || query.includes("network") || query.includes("dns")) {
-    return `1. ⚡ Quick Fix: Flush your DNS resolver cache and reset the Windows Winsock IP routing catalog to restore low ping routing.
-\`ipconfig /flushdns && netsh winsock reset && netsh int ip reset\`
+  // Universal Elite Fallback
+  return `**Root Cause**: Performance bottleneck or initialization friction between Windows background services and your game launcher.
 
-2. 🚀 Performance Boost: Switch your DNS server to Cloudflare Gaming (\`1.1.1.1\` / \`1.0.0.1\`) and disable 'Network Throttling Index' in the registry to prioritize UDP gaming packets over background downloads.`;
-  }
+**Step-by-Step Fix**:
+1. **Enable Windows Game Mode & Ultimate Performance Plan**: Optimize CPU scheduler priorities and power delivery for active gaming tasks.
+\`powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 && powercfg /setactive e9a42b02-d5df-448d-aa00-03f14749eb61\`
+2. **Set Game Process Priority to High GPU**: In Windows Graphics Settings, browse and add your game's main \`.exe\`, then select **Options** -> **High performance**.
+\`ms-settings:display-advancedgraphics\`
+3. **Verify Game Integrity & Clear Launcher Cache**: Verify game files through Steam, Epic Games, EA App, or Riot Client to replace corrupted binaries.
 
-  if (query.includes("potato") || query.includes("low end") || query.includes("intel hd") || query.includes("low spec") || query.includes("8gb")) {
-    return `1. ⚡ Quick Fix: Activate the hidden Windows Ultimate Performance power plan and set in-game rendering scale to 75% with AMD FSR or Intel XeSS Performance mode.
-\`powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61\`
-
-2. 🚀 Performance Boost: Set Windows pagefile (Virtual Memory) manually to 16384 MB on your fastest SSD drive to eliminate out-of-memory crashes on low RAM systems.`;
-  }
-
-  // Universal Elite Solution
-  return `1. ⚡ Quick Fix: Enable Game Mode, configure High Performance GPU preference in Windows Graphics Settings, and verify game files through your launcher.
-\`powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c\`
-
-2. 🚀 Performance Boost: Add \`-high -threads 8 +mat_queue_mode 2\` to your game launch parameters and disable Windows Game Bar background recording to reclaim up to 15% CPU headroom.`;
+**Pro-Tip**: Disable Windows Game Bar background DVR recording (\`ms-settings:gaming-captures\`) to instantly free up 10-15% CPU headroom.`;
 }
 
 app.get("/api/health", (req, res) => {

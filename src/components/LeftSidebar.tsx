@@ -1,6 +1,6 @@
 import React from 'react';
-import { Cpu, Zap, History, Sliders, ShieldCheck } from 'lucide-react';
-import { UserHardwareSpecs } from '../types';
+import { Cpu, Zap, History, Sliders, ShieldCheck, Crown, Sparkles, ArrowRight } from 'lucide-react';
+import { SubscriptionInfo, UserHardwareSpecs } from '../types';
 import { STARTER_PROMPTS } from '../data/gamingKnowledge';
 
 interface LeftSidebarProps {
@@ -10,6 +10,8 @@ interface LeftSidebarProps {
   activeTab: string;
   setActiveTab: (tab: 'chat' | 'optimizer' | 'fixes' | 'logs') => void;
   recentSearches?: string[];
+  subscription?: SubscriptionInfo;
+  onOpenSubscriptionModal?: () => void;
 }
 
 export const LeftSidebar: React.FC<LeftSidebarProps> = ({
@@ -19,7 +21,10 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
   activeTab,
   setActiveTab,
   recentSearches = [],
+  subscription,
+  onOpenSubscriptionModal,
 }) => {
+
   return (
     <aside className="w-64 shrink-0 border-r border-white/10 bg-[#0c0c0e]/80 p-4 flex flex-col justify-between select-none overflow-y-auto hidden lg:flex">
       <div className="space-y-6">
@@ -124,13 +129,50 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
         </div>
       </div>
 
-      {/* Footer Diagnostic Status */}
-      <div className="pt-4 border-t border-white/10">
+      {/* Footer Diagnostic Status & Membership Card */}
+      <div className="pt-4 border-t border-white/10 space-y-3">
+        {onOpenSubscriptionModal && (
+          <div 
+            onClick={onOpenSubscriptionModal}
+            className={`p-3 rounded-xl border transition cursor-pointer group ${
+              subscription?.tier === 'esports'
+                ? 'bg-indigo-950/40 border-indigo-500/40 hover:border-indigo-400'
+                : subscription?.tier === 'pro'
+                ? 'bg-green-950/40 border-green-500/40 hover:border-green-400'
+                : 'bg-gradient-to-br from-white/5 to-white/10 border-white/10 hover:border-green-500/30'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold">
+                {subscription?.tier === 'esports' ? (
+                  <Crown className="w-3.5 h-3.5 text-indigo-400" />
+                ) : subscription?.tier === 'pro' ? (
+                  <Zap className="w-3.5 h-3.5 text-green-400" />
+                ) : (
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                )}
+                <span className="text-white">
+                  {subscription?.tier === 'esports' ? 'ESPORTS STUDIO' : subscription?.tier === 'pro' ? 'PRO TUNER' : 'MEMBERSHIP TIERS'}
+                </span>
+              </div>
+              <span className="text-[9px] font-mono text-green-400 uppercase font-bold group-hover:translate-x-0.5 transition-transform">
+                {subscription?.tier === 'free' ? 'UPGRADE' : 'MANAGE'}
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-400 leading-tight">
+              {subscription?.tier === 'free'
+                ? 'Unlock dedicated low-latency AI compute & 100% ad-free experience.'
+                : 'Active VIP subscription • Fast AI compute enabled.'}
+            </p>
+          </div>
+        )}
+
         <div className="flex items-center gap-2 p-2 rounded bg-white/5 text-[10px] font-mono text-slate-400">
           <ShieldCheck className="w-3.5 h-3.5 text-green-400 shrink-0" />
           <span>Vanguard / EAC / DirectX Sandbox Ready</span>
         </div>
       </div>
+
     </aside>
   );
 };

@@ -47,26 +47,25 @@ export function parseAiResponse(text: string): ParsedDiagnosis {
     result.performanceBoost = boostMatch[1].trim();
   }
 
-  // Legacy parsing (keep intact for old chat history)
-  // Extract Quick Cause
-  const causeMatch = text.match(/\*\*Quick Cause Assessment\*\*:\s*([\s\S]*?)(?=\n\n\*\*|\n\*\*Step|$)/i) ||
-    text.match(/1\.\s*\*\*Quick Cause Assessment\*\*:\s*([\s\S]*?)(?=\n\n|\n2\.|$)/i) ||
-    text.match(/(?:Cause|Diagnosis|Diagnostic|Problème):\s*([\s\S]*?)(?=\n\n|\n\*\*|$)/i);
+  // Extract Quick / Root Cause
+  const causeMatch = text.match(/\*\*(?:Root Cause|Quick Cause Assessment|Root Cause Assessment|Cause|Diagnostic|Problème)\*\*:\s*([\s\S]*?)(?=\n\n\*\*|\n\*\*Step|\n\*\*Pro-Tip|$)/i) ||
+    text.match(/1\.\s*\*\*(?:Root Cause|Quick Cause Assessment)\*\*:\s*([\s\S]*?)(?=\n\n|\n2\.|$)/i) ||
+    text.match(/(?:Root Cause|Quick Cause Assessment|Cause|Diagnosis|Diagnostic|Problème):\s*([\s\S]*?)(?=\n\n|\n\*\*|$)/i);
 
   if (causeMatch && causeMatch[1]) {
     result.quickCause = causeMatch[1].trim();
   }
 
-  // Extract Pro-Tip
-  const proTipMatch = text.match(/\*\*(?:Pro-Tip|Pro Tip|Optimization Note|Conseil Pro|Astuce)\*\*:\s*([\s\S]*?)$/i) ||
+  // Extract Pro-Tip / Performance Boost
+  const proTipMatch = text.match(/\*\*(?:Pro-Tip|Pro Tip|Performance Boost|Optimization Note|Conseil Pro|Astuce)\*\*:\s*([\s\S]*?)$/i) ||
     text.match(/3\.\s*\*\*(?:Pro-Tip|Pro Tip|Optimization Note)\*\*:\s*([\s\S]*?)$/i);
 
   if (proTipMatch && proTipMatch[1]) {
     result.proTip = proTipMatch[1].trim();
   }
 
-  // Extract Step-by-Step
-  const stepsSectionMatch = text.match(/\*\*(?:Step-by-Step Fix|Step-by-Step|Steps|Solutions?|Étapes de résolution)\*\*:\s*([\s\S]*?)(?=\n\n\*\*(?:Pro-Tip|Pro Tip)|$)/i);
+  // Extract Step-by-Step Fix
+  const stepsSectionMatch = text.match(/\*\*(?:Step-by-Step Fix|Step-by-Step|Steps|Solutions?|Étapes de résolution)\*\*:\s*([\s\S]*?)(?=\n\n\*\*(?:Pro-Tip|Pro Tip|Performance Boost)|$)/i);
   
   const stepText = stepsSectionMatch ? stepsSectionMatch[1] : (!result.quickFix ? text : '');
   
