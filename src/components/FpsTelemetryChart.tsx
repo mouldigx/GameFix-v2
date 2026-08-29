@@ -201,7 +201,7 @@ export const FpsTelemetryChart: React.FC<FpsTelemetryChartProps> = ({
   }, [historyData]);
 
   return (
-    <div className="bg-black/50 border border-white/10 rounded-xl p-3 space-y-3">
+    <div className="bg-black/50 border border-white/10 rounded-xl p-3 space-y-3 min-w-0">
       {/* Header & Mode Switcher */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
@@ -244,8 +244,8 @@ export const FpsTelemetryChart: React.FC<FpsTelemetryChartProps> = ({
       </div>
 
       {/* Main Recharts Area Container */}
-      <div className="h-36 w-full bg-slate-950/80 rounded-lg p-1 border border-white/5 relative">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-36 w-full min-w-0 bg-slate-950/80 rounded-lg p-1 border border-white/5 relative" style={{ minHeight: '144px', minWidth: '0px' }}>
+        <ResponsiveContainer width="100%" height={140} minWidth={0} minHeight={120} debounce={50}>
           <AreaChart
             data={historyData}
             margin={{ top: 10, right: 8, left: -26, bottom: 0 }}
