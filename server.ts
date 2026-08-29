@@ -617,6 +617,417 @@ Return a valid JSON object only with this exact structure (NO markdown like \`\`
   }
 });
 
+/**
+ * Offline Error Code Lookup Engine Database
+ */
+function getOfflineErrorDiagnosis(codeQuery: string) {
+  const code = (codeQuery || "").trim().toUpperCase();
+
+  // 1. 0x887A0005 (DXGI_ERROR_DEVICE_REMOVED)
+  if (code.includes("887A0005") || code.includes("DEVICE_REMOVED")) {
+    return {
+      errorCode: "0x887A0005 (DXGI_ERROR_DEVICE_REMOVED)",
+      title: "Diagnosis for 0x887A0005 (DXGI_ERROR_DEVICE_REMOVED)",
+      description: "DirectX runtime lost communication with the physical graphics hardware. This happens when the GPU crashes internally, an aggressive factory overclock destabilizes voltage under load, or Windows TDR (Timeout Detection and Recovery) resets the display driver.",
+      rootCause: "GPU hardware driver crash, unstable factory VRAM/Core clock, or insufficient TDR timeout threshold in Windows.",
+      severity: "Critical",
+      category: "DirectX & GPU Driver",
+      steps: [
+        {
+          stepNumber: 1,
+          title: "Increase Windows TDR Delay to 8 Seconds",
+          instruction: "Prevent Windows from prematurely killing the GPU driver during intense shader loading spikes.",
+          command: 'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers" /v TdrDelay /t REG_DWORD /d 8 /f'
+        },
+        {
+          stepNumber: 2,
+          title: "Reset GPU Overclock & Underclock Core by -50MHz",
+          instruction: "Open MSI Afterburner or AMD Adrenalin. Reset Core Clock and Memory Clock to stock (+0 MHz) or test a -50MHz downclock to rule out transient power spikes.",
+          command: "MSI Afterburner -> Reset Stock Profile -> Apply"
+        },
+        {
+          stepNumber: 3,
+          title: "Perform Clean Display Driver Install with DDU",
+          instruction: "Boot Windows into Safe Mode, run Display Driver Uninstaller (DDU) to wipe residual driver states, and reinstall the latest official WHQL Game Ready driver.",
+          command: "shutdown /r /o /f /t 00"
+        },
+        {
+          stepNumber: 4,
+          title: "Disable GPU Hardware Scheduling (HAGS) / Switch to DirectX 11",
+          instruction: "In games supporting both APIs (e.g. Apex Legends, Cyberpunk, Warzone), add launch argument `-dx11` or `-d3d11` to bypass DX12 memory leaks.",
+          command: "-dx11 -novid -high"
+        }
+      ],
+      commandSnippet: 'reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers" /v TdrDelay /t REG_DWORD /d 8 /f',
+      proTip: "In NVIDIA Control Panel, go to Manage 3D Settings -> Power Management Mode -> select 'Prefer Maximum Performance' to prevent GPU core clock downthrottling during loading screens.",
+      affectedGames: ["Apex Legends", "Call of Duty: Warzone", "Cyberpunk 2077", "Battlefield 2042", "Unreal Engine 5 titles"]
+    };
+  }
+
+  // 2. 0x887A0006 (DXGI_ERROR_DEVICE_HUNG)
+  if (code.includes("887A0006") || code.includes("DEVICE_HUNG")) {
+    return {
+      errorCode: "0x887A0006 (DXGI_ERROR_DEVICE_HUNG)",
+      title: "Diagnosis for 0x887A0006 (DXGI_ERROR_DEVICE_HUNG)",
+      description: "DirectX graphics command queue froze and timed out waiting for GPU hardware response. Typically triggered by corrupt DirectX shader cache, ray tracing memory overflow, or unstable power delivery.",
+      rootCause: "GPU command buffer timeout due to VRAM exhaustion or shader pipeline deadlock.",
+      severity: "High",
+      category: "DirectX & GPU Driver",
+      steps: [
+        {
+          stepNumber: 1,
+          title: "Clear DirectX Shader Cache & NVIDIA/AMD GL Caches",
+          instruction: "Wipe corrupted precompiled shader binaries so Windows rebuilds them cleanly.",
+          command: 'del /q /f /s "%localappdata%\\D3DSCache\\*"'
+        },
+        {
+          stepNumber: 2,
+          title: "Lower VRAM Heavy Graphics Settings",
+          instruction: "Turn Texture Quality down from Ultra to High, and disable Ray Tracing Reflections which saturate the VRAM memory controller.",
+        },
+        {
+          stepNumber: 3,
+          title: "Force DirectX 11 Fallback",
+          instruction: "Add `-d3d11` to Steam / Epic Games launcher command line properties.",
+          command: "-d3d11"
+        }
+      ],
+      commandSnippet: 'del /q /f /s "%localappdata%\\D3DSCache\\*" && del /q /f /s "%localappdata%\\NVIDIA\\DXCache\\*"',
+      proTip: "Set NVIDIA Control Panel 'Shader Cache Size' to 10 GB instead of the default 4 GB to avoid constant recompilation hitches.",
+      affectedGames: ["Apex Legends", "FIFA / EA Sports FC", "Elden Ring", "Final Fantasy VII Remake", "Monster Hunter"]
+    };
+  }
+
+  // 3. 0xC0000005 (STATUS_ACCESS_VIOLATION)
+  if (code.includes("C0000005") || code.includes("ACCESS_VIOLATION")) {
+    return {
+      errorCode: "0xC0000005 (STATUS_ACCESS_VIOLATION)",
+      title: "Diagnosis for 0xC0000005 (Memory Access Violation)",
+      description: "The game executed an instruction referencing a protected or unallocated memory address (Null Pointer or Out-of-Bounds read/write). Common causes include unstable XMP/DOCP RAM timings, corrupt game files, or third-party overlays hooking into the DirectX swapchain.",
+      rootCause: "Illegal memory read/write attempt due to unstable RAM profile, corrupt game binaries, or conflicting overlay injection (Discord, RivaTuner, GeForce Experience).",
+      severity: "Critical",
+      category: "Memory & System Stability",
+      steps: [
+        {
+          stepNumber: 1,
+          title: "Run System File Checker & Memory Diagnostics",
+          instruction: "Scan for corrupted OS memory manager DLLs and run Windows Memory Diagnostic tool.",
+          command: "sfc /scannow && mdsched.exe"
+        },
+        {
+          stepNumber: 2,
+          title: "Verify Game File Integrity",
+          instruction: "In Steam (Right-click game -> Installed Files -> Verify integrity of game files) or Epic Games (Manage -> Verify).",
+        },
+        {
+          stepNumber: 3,
+          title: "Disable Third-Party In-Game Overlays",
+          instruction: "Turn off Discord In-Game Overlay, RivaTuner Statistics Server (RTSS), and Overwolf which inject into memory spaces.",
+        },
+        {
+          stepNumber: 4,
+          title: "Test RAM at Stock JEDEC Speeds (Disable XMP / EXPO temporarily)",
+          instruction: "If crashes persist across multiple games, enter BIOS and disable XMP/EXPO to verify RAM stability.",
+        }
+      ],
+      commandSnippet: "sfc /scannow && DISM /Online /Cleanup-Image /RestoreHealth",
+      proTip: "If you have an Intel 13th or 14th Gen Core i9/i7 CPU experiencing 0xC0000005 during Unreal Engine shader compilation, update your BIOS to the latest microcode (0x12B) and set Intel Default Settings to fix Vmin Shift voltage instability.",
+      affectedGames: ["Counter-Strike 2", "Cyberpunk 2077", "Fortnite", "Black Myth: Wukong", "Hogwarts Legacy"]
+    };
+  }
+
+  // 4. 0xC000007B (STATUS_INVALID_IMAGE_FORMAT)
+  if (code.includes("C000007B") || code.includes("0XC000007B")) {
+    return {
+      errorCode: "0xC000007B (Application Unable to Start Correctly)",
+      title: "Diagnosis for 0xC000007B (Runtime Architecture Mismatch)",
+      description: "A 64-bit game executable attempted to load a 32-bit DLL (or vice versa). This is almost always caused by manually copying loose DLL files into C:\\Windows\\System32 or corrupted Microsoft Visual C++ redistributable packages.",
+      rootCause: "32-bit and 64-bit runtime DLL library mismatch in System32 or the game root installation folder.",
+      severity: "Critical",
+      category: "DLL & C++ Runtimes",
+      steps: [
+        {
+          stepNumber: 1,
+          title: "Install Visual C++ All-in-One Runtime Package (2005 - 2022)",
+          instruction: "Use PowerShell to silently install all official Microsoft Visual C++ x86 and x64 runtimes.",
+          command: "winget install Microsoft.VCRedist.2015+.x64 -e && winget install Microsoft.VCRedist.2015+.x86 -e"
+        },
+        {
+          stepNumber: 2,
+          title: "Install DirectX End-User Runtimes (June 2010)",
+          instruction: "Installs legacy DirectX 9.0c, 10, and 11 d3dx DLLs required for game audio and input.",
+          command: "winget install Microsoft.DirectX -e"
+        },
+        {
+          stepNumber: 3,
+          title: "Delete Manually Downloaded DLL Files from Game Folder",
+          instruction: "Remove files like xinput1_3.dll, d3dx9_43.dll, msvcp140.dll from the game directory so Windows loads legitimate system libraries.",
+        }
+      ],
+      commandSnippet: "winget install Microsoft.VCRedist.2015+.x64 -e && winget install Microsoft.DirectX -e",
+      proTip: "Never download individual DLL files from third-party websites. Always use official Microsoft Visual C++ and DirectX installers.",
+      affectedGames: ["GTA V", "The Witcher 3", "Far Cry", "Need for Speed", "Dark Souls"]
+    };
+  }
+
+  // 5. VAN 9003 / VAN 128 / VAN 1067 (Valorant Vanguard)
+  if (code.includes("VAN") || code.includes("9003") || code.includes("128") || code.includes("1067") || code.includes("VANGUARD")) {
+    return {
+      errorCode: "VAN 9003 / VAN 128 (Riot Vanguard Security Enforcement)",
+      title: "Diagnosis for VAN 9003 / VAN 128 / VAN 1067",
+      description: "Riot Vanguard kernel-level anti-cheat failed to establish a secure hardware trust anchor because TPM 2.0 (Trusted Platform Module) or UEFI Secure Boot is disabled in BIOS, or the vgc background service failed to start.",
+      rootCause: "UEFI Secure Boot / TPM 2.0 disabled in BIOS or Vanguard kernel service (vgc.sys) blocked by Windows Core Isolation.",
+      severity: "Critical",
+      category: "Anti-Cheat & Security",
+      steps: [
+        {
+          stepNumber: 1,
+          title: "Enable TPM 2.0 & Secure Boot in Motherboard BIOS",
+          instruction: "Reboot PC, press Del/F2 -> Set Boot Mode to 'UEFI Only' -> Enable 'Secure Boot' -> Enable 'AMD fTPM' (AMD) or 'Intel PTT' (Intel).",
+        },
+        {
+          stepNumber: 2,
+          title: "Set Vanguard Service (vgc) to Automatic Startup",
+          instruction: "Ensure Windows launches the Vanguard kernel driver immediately upon system boot.",
+          command: "sc config vgc start= auto && net start vgc"
+        },
+        {
+          stepNumber: 3,
+          title: "Enable Hypervisor Launch Type in Windows BCD",
+          instruction: "Fixes VAN 1067 on Windows 11 systems.",
+          command: "bcdedit /set hypervisorlaunchtype auto"
+        }
+      ],
+      commandSnippet: "sc config vgc start= auto && net start vgc && bcdedit /set hypervisorlaunchtype auto",
+      proTip: "On MSI and Gigabyte motherboards, toggle Secure Boot Mode from 'Custom' to 'Standard' and enroll Factory Default Keys if Secure Boot state reports 'Disabled' inside msinfo32.",
+      affectedGames: ["Valorant", "League of Legends"]
+    };
+  }
+
+  // 6. EAC 30005 (Easy Anti-Cheat CreateFile failed with 32)
+  if (code.includes("30005") || code.includes("EAC") || code.includes("EASY ANTI CHEAT")) {
+    return {
+      errorCode: "EAC Error 30005 (CreateFile Failed with 32)",
+      title: "Diagnosis for Easy Anti-Cheat Error 30005",
+      description: "Easy Anti-Cheat cannot open or initialize its driver `EasyAntiCheat.sys` because the file is locked by an existing zombie background game process or blocked by third-party antivirus real-time shields.",
+      rootCause: "EasyAntiCheat.sys driver file locked by duplicate process or antivirus sandboxing.",
+      severity: "High",
+      category: "Anti-Cheat & Security",
+      steps: [
+        {
+          stepNumber: 1,
+          title: "Kill Zombie Game & EAC Processes in Task Manager",
+          instruction: "Forcefully terminate leftover anti-cheat tasks in Windows.",
+          command: "taskkill /F /IM EasyAntiCheat.exe & taskkill /F /IM EasyAntiCheat_EOS.exe"
+        },
+        {
+          stepNumber: 2,
+          title: "Delete Locked EasyAntiCheat.sys Driver File",
+          instruction: "Navigate to `C:\\Program Files (x86)\\EasyAntiCheat` and delete `EasyAntiCheat.sys`. The launcher will generate a fresh clean copy.",
+          command: 'del /q /f "C:\\Program Files (x86)\\EasyAntiCheat\\EasyAntiCheat.sys"'
+        },
+        {
+          stepNumber: 3,
+          title: "Run EAC Setup Repair Tool",
+          instruction: "Open `<GameDirectory>\\EasyAntiCheat\\EasyAntiCheat_Setup.exe` as Administrator and click 'Repair'.",
+        }
+      ],
+      commandSnippet: 'taskkill /F /IM EasyAntiCheat.exe && del /q /f "C:\\Program Files (x86)\\EasyAntiCheat\\EasyAntiCheat.sys"',
+      proTip: "Add the EasyAntiCheat folder to Windows Defender Antivirus exclusions to prevent signature scanning lockouts during game launches.",
+      affectedGames: ["Apex Legends", "Fortnite", "Elden Ring", "Rust", "The Division 2"]
+    };
+  }
+
+  // 7. ERR_GFX_D3D_INIT (GTA V / RAGE Engine)
+  if (code.includes("ERR_GFX_D3D_INIT") || code.includes("GFX_D3D") || code.includes("GTA")) {
+    return {
+      errorCode: "ERR_GFX_D3D_INIT (Failed Initialization)",
+      title: "Diagnosis for ERR_GFX_D3D_INIT (GTA V / FiveM)",
+      description: "Rockstar Advanced Game Engine (RAGE) encountered a fatal Direct3D device loss or invalid DirectX feature level negotiation, often caused by overlay hooks, DirectX 10/10.1 legacy modes, or GPU driver crashes.",
+      rootCause: "DirectX device initialization failure in RAGE engine or corrupt settings.xml configuration.",
+      severity: "High",
+      category: "Game Engine & DirectX",
+      steps: [
+        {
+          stepNumber: 1,
+          title: "Force DirectX 11 in settings.xml",
+          instruction: "Open `%USERPROFILE%\\Documents\\Rockstar Games\\GTA V\\settings.xml` and ensure `<DX_Version value=\"1\" />` (DirectX 11) is configured.",
+          command: 'notepad "%USERPROFILE%\\Documents\\Rockstar Games\\GTA V\\settings.xml"'
+        },
+        {
+          stepNumber: 2,
+          title: "Clear FiveM & GTA V Shader Caches",
+          instruction: "Delete compiled cache files to resolve corrupted graphical assets.",
+          command: 'del /s /q /f "%localappdata%\\FiveM\\FiveM.app\\data\\cache\\*"'
+        },
+        {
+          stepNumber: 3,
+          title: "Add Launch Arguments in Steam / Epic / Rockstar Launcher",
+          instruction: "Set command line arguments to bypass DirectX adapter mismatches.",
+          command: "-ignoredifferentvideocard -DX11 -high"
+        }
+      ],
+      commandSnippet: "-ignoredifferentvideocard -DX11 -high",
+      proTip: "If you have an NVIDIA GPU, disable NVIDIA ShadowPlay In-Game Overlay which frequently causes ERR_GFX_D3D_INIT when Alt-Tabbing in full screen mode.",
+      affectedGames: ["Grand Theft Auto V", "FiveM", "Red Dead Redemption 2"]
+    };
+  }
+
+  // 8. 0x80070005 (Access Denied / Windows Store / Gaming Services)
+  if (code.includes("80070005") || code.includes("0X80070005")) {
+    return {
+      errorCode: "0x80070005 (E_ACCESSDENIED)",
+      title: "Diagnosis for 0x80070005 (Windows Permission Denied)",
+      description: "Windows OS or Xbox App denied file write/read permissions to `WindowsApps` or `%localappdata%`. Often happens during Xbox Game Pass downloads, save game writes, or registry permission corruptions.",
+      rootCause: "Missing NTFS file access permissions or corrupted Xbox Gaming Services registry tokens.",
+      severity: "High",
+      category: "Windows Permissions & Xbox App",
+      steps: [
+        {
+          stepNumber: 1,
+          title: "Reset Microsoft Store & Xbox Gaming Services",
+          instruction: "Clear Store cache and repair Gaming Services registry components.",
+          command: "wsreset.exe && powershell -command \"Get-AppxPackage *gamingservices* -allusers | Remove-AppxPackage -allusers\""
+        },
+        {
+          stepNumber: 2,
+          title: "Run Game as Administrator",
+          instruction: "Right-click the game shortcut or executable -> Properties -> Compatibility -> Check 'Run this program as an administrator'.",
+        },
+        {
+          stepNumber: 3,
+          title: "Restore WindowsApps Folder Ownership",
+          instruction: "Take ownership of the destination drive delivery folder.",
+          command: 'takeown /f "C:\\Program Files\\WindowsApps" /r /d y'
+        }
+      ],
+      commandSnippet: "wsreset.exe",
+      proTip: "In Windows Services (`services.msc`), verify that 'Storage Service' and 'Gaming Services' are running and set to Automatic.",
+      affectedGames: ["Xbox Game Pass PC titles", "Forza Horizon 5", "Sea of Thieves", "Microsoft Flight Simulator"]
+    };
+  }
+
+  // Universal Fallback for any other custom error code
+  return {
+    errorCode: code || "UNKNOWN_ERROR_CODE",
+    title: `Diagnosis for ${code || "Custom Error Code"}`,
+    description: `Comprehensive automated diagnostic protocol for error "${code}". This error is tied to application runtime exceptions, driver communication timeouts, or missing library dependencies.`,
+    rootCause: `Runtime exception or subsystem fault identified for ${code}.`,
+    severity: "High",
+    category: "System & Game Engine",
+    steps: [
+      {
+        stepNumber: 1,
+        title: "Scan & Repair Corrupted System Files",
+        instruction: "Execute Windows System File Checker and DISM image repair in Command Prompt (Admin).",
+        command: "sfc /scannow && DISM /Online /Cleanup-Image /RestoreHealth"
+      },
+      {
+        stepNumber: 2,
+        title: "Update or Clean Reinstall GPU Graphics Driver",
+        instruction: "Ensure latest WHQL drivers are installed with a clean configuration to resolve rendering pipeline errors.",
+        command: "winget install NVIDIA.GeForceNow -e || winget install AMD.RadeonSoftware -e"
+      },
+      {
+        stepNumber: 3,
+        title: "Verify Game Installation Files in Launcher",
+        instruction: "Use Steam, Epic Games, or EA App built-in verification tool to redownload damaged or missing checksum files.",
+      },
+      {
+        stepNumber: 4,
+        title: "Install Microsoft Visual C++ Runtimes & DirectX",
+        instruction: "Ensure all required 2005-2022 x86 and x64 redistributable libraries are installed.",
+        command: "winget install Microsoft.VCRedist.2015+.x64 -e && winget install Microsoft.DirectX -e"
+      }
+    ],
+    commandSnippet: "sfc /scannow && DISM /Online /Cleanup-Image /RestoreHealth",
+    proTip: "Check Windows Event Viewer (`eventvwr.msc`) under Windows Logs -> Application -> Event ID 1000 to identify the exact faulting module .dll or .exe.",
+    affectedGames: ["All Windows PC games"]
+  };
+}
+
+app.post("/api/lookup-error", async (req, res) => {
+  try {
+    const { errorCode, gameTitle, userSpecs } = req.body || {};
+    const effectiveCode = (errorCode || "").trim();
+
+    if (!effectiveCode) {
+      return res.status(400).json({ error: "Please provide an error code to diagnose." });
+    }
+
+    const client = getGeminiClient();
+
+    if (client) {
+      try {
+        const prompt = `You are "GameFix AI", an elite PC gaming optimization and game crash resolution expert.
+Diagnose this exact error code or crash message:
+Error Code / Crash: "${effectiveCode}"
+Game: "${gameTitle || "Universal PC Title"}"
+User System Specs: ${JSON.stringify(userSpecs || {})}
+
+Return a valid JSON object only (NO markdown code fences like \`\`\`json):
+{
+  "errorCode": "${effectiveCode}",
+  "title": "Diagnosis for ${effectiveCode}",
+  "description": "2-3 punchy sentences explaining what this error code technically means and what broke in simple gamer terms.",
+  "rootCause": "One concise, precise sentence identifying the exact hardware, driver, or software failure point.",
+  "severity": "Critical" (or "High" / "Medium" / "Low"),
+  "category": "DirectX & GPU / Anti-Cheat / DLL & Runtime / Memory / Network",
+  "steps": [
+    {
+      "stepNumber": 1,
+      "title": "Step 1 Action Title",
+      "instruction": "Clear actionable instruction",
+      "command": "Optional single copyable CMD / PowerShell / Registry command or file path if applicable"
+    },
+    {
+      "stepNumber": 2,
+      "title": "Step 2 Action Title",
+      "instruction": "Clear actionable instruction",
+      "command": "Optional command"
+    },
+    {
+      "stepNumber": 3,
+      "title": "Step 3 Action Title",
+      "instruction": "Clear actionable instruction",
+      "command": "Optional command"
+    }
+  ],
+  "commandSnippet": "The primary single most effective command line fix if applicable",
+  "proTip": "A hidden optimization, config tweak, or launch argument for maximum FPS and zero crashes.",
+  "affectedGames": ["List of 3-5 popular affected games"]
+}`;
+
+        const response = await client.models.generateContent({
+          model: "gemini-3.7-flash",
+          contents: prompt,
+          config: {
+            systemInstruction: "You are an expert game error code diagnostic system. Always output valid JSON matching the exact schema requested.",
+            temperature: 0.1,
+          },
+        });
+
+        if (response.text) {
+          const cleanText = response.text.replace(/```json/g, "").replace(/```/g, "").trim();
+          const parsed = JSON.parse(cleanText);
+          return res.json(parsed);
+        }
+      } catch (geminiError) {
+        console.warn("Gemini error lookup failed, falling back to offline database:", geminiError);
+      }
+    }
+
+    // Heuristic offline database lookup
+    const diagnosis = getOfflineErrorDiagnosis(effectiveCode);
+    return res.json(diagnosis);
+  } catch (error: any) {
+    console.error("Error Lookup API Error:", error);
+    const fallback = getOfflineErrorDiagnosis(req.body?.errorCode || "0x887A0005");
+    res.json(fallback);
+  }
+});
+
+
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

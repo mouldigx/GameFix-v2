@@ -326,7 +326,14 @@ export default function App() {
             />
           )}
 
-          {activeTab === 'fixes' && <EmergencyFixesView />}
+          {activeTab === 'fixes' && (
+            <EmergencyFixesView
+              onAskAi={(query) => {
+                setActiveTab('chat');
+                handleSendMessage(query, true);
+              }}
+            />
+          )}
 
           {activeTab === 'logs' && <CrashLogScanner userSpecs={userSpecs} />}
         </main>

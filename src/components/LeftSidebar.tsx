@@ -93,6 +93,29 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
             </div>
             <span className="text-cyan-400 font-mono text-xs group-hover:translate-x-0.5 transition-transform">&rarr;</span>
           </button>
+
+          {/* Error Code Lookup Engine Trigger */}
+          <button
+            onClick={() => setActiveTab('fixes')}
+            className={`w-full mt-2 p-2.5 rounded-lg border text-left transition flex items-center justify-between group cursor-pointer ${
+              activeTab === 'fixes'
+                ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.2)]'
+                : 'bg-emerald-950/30 border-emerald-500/20 text-slate-300 hover:bg-emerald-900/40 hover:border-emerald-500/40'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <Zap className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
+              <div>
+                <div className="text-[11px] font-mono font-bold text-white leading-tight">
+                  Error Code Engine
+                </div>
+                <div className="text-[9px] font-mono text-emerald-400">
+                  DirectX, DLL & Crash AI
+                </div>
+              </div>
+            </div>
+            <span className="text-emerald-400 font-mono text-xs group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+          </button>
         </div>
 
         {/* Recent Searches */}

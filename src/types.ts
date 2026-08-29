@@ -114,3 +114,24 @@ export interface GameConfigResult {
   installationTip: string;
   keyTweaks?: ConfigTweakItem[];
 }
+
+export interface LookupStepItem {
+  stepNumber: number;
+  title: string;
+  instruction: string;
+  command?: string;
+}
+
+export interface ErrorCodeLookupResult {
+  errorCode: string;
+  title: string;
+  description: string;
+  rootCause: string;
+  severity: 'Critical' | 'High' | 'Medium' | 'Low';
+  category: string;
+  steps: LookupStepItem[];
+  commandSnippet?: string;
+  proTip: string;
+  affectedGames?: string[];
+}
+
