@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, Zap, Cpu, Sparkles, Sliders, Camera, Check, Copy, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { Activity, Zap, Cpu, Sparkles, Sliders, Camera, Check, Copy, ShieldAlert, CheckCircle2, TrendingUp } from 'lucide-react';
 import { UserHardwareSpecs } from '../types';
 import { GpuDriverAlert } from './GpuDriverAlert';
+import { FpsTelemetryChart } from './FpsTelemetryChart';
 
 interface TelemetrySidebarProps {
   userSpecs: UserHardwareSpecs;
@@ -215,6 +216,12 @@ Health: ${healthStatus}`;
             {userSpecs.cpu}
           </div>
         </div>
+
+        {/* Historical FPS Diagnostic Telemetry with Recharts */}
+        <FpsTelemetryChart
+          userSpecs={userSpecs}
+          currentFps={estFps}
+        />
 
         {/* GPU Driver Health & Outdated Alert Component */}
         <GpuDriverAlert
