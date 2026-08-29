@@ -1,5 +1,5 @@
 import React from 'react';
-import { Cpu, Zap, History, Sliders, ShieldCheck } from 'lucide-react';
+import { Cpu, Zap, History, Sliders, ShieldCheck, FileCode2 } from 'lucide-react';
 import { UserHardwareSpecs } from '../types';
 import { STARTER_PROMPTS } from '../data/gamingKnowledge';
 
@@ -8,7 +8,7 @@ interface LeftSidebarProps {
   onOpenSpecsModal: () => void;
   onSelectPrompt: (text: string) => void;
   activeTab: string;
-  setActiveTab: (tab: 'chat' | 'optimizer' | 'fixes' | 'logs') => void;
+  setActiveTab: (tab: 'chat' | 'optimizer' | 'config' | 'fixes' | 'logs') => void;
   recentSearches?: string[];
 }
 
@@ -70,6 +70,29 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
               </span>
             </div>
           </div>
+
+          {/* Quick Config Tool Trigger */}
+          <button
+            onClick={() => setActiveTab('config')}
+            className={`w-full mt-2.5 p-2.5 rounded-lg border text-left transition flex items-center justify-between group cursor-pointer ${
+              activeTab === 'config'
+                ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.2)]'
+                : 'bg-cyan-950/30 border-cyan-500/20 text-slate-300 hover:bg-cyan-900/40 hover:border-cyan-500/40'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <FileCode2 className="w-4 h-4 text-cyan-400 group-hover:rotate-6 transition-transform" />
+              <div>
+                <div className="text-[11px] font-mono font-bold text-white leading-tight">
+                  Config Generator
+                </div>
+                <div className="text-[9px] font-mono text-cyan-400">
+                  .ini / .cfg / .json AI
+                </div>
+              </div>
+            </div>
+            <span className="text-cyan-400 font-mono text-xs group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+          </button>
         </div>
 
         {/* Recent Searches */}

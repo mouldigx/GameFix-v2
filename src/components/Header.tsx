@@ -1,10 +1,10 @@
 import React from 'react';
-import { ShieldCheck, Cpu, Flame, Terminal, FileText, Gamepad2, Volume2, VolumeX, Sparkles, Activity, Globe, HelpCircle, Moon, Zap } from 'lucide-react';
+import { ShieldCheck, Cpu, Flame, Terminal, FileText, FileCode2, Gamepad2, Volume2, VolumeX, Sparkles, Activity, Globe, HelpCircle, Moon, Zap } from 'lucide-react';
 import { ThemeMode, UserHardwareSpecs } from '../types';
 
 interface HeaderProps {
-  activeTab: 'chat' | 'optimizer' | 'fixes' | 'logs';
-  setActiveTab: (tab: 'chat' | 'optimizer' | 'fixes' | 'logs') => void;
+  activeTab: 'chat' | 'optimizer' | 'config' | 'fixes' | 'logs';
+  setActiveTab: (tab: 'chat' | 'optimizer' | 'config' | 'fixes' | 'logs') => void;
   userSpecs: UserHardwareSpecs;
   onOpenSpecsModal: () => void;
   audioMuted: boolean;
@@ -110,6 +110,21 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Flame className="w-3.5 h-3.5" />
               <span>{isTn ? 'أوبتيمايزر FPS' : 'Settings Optimizer'}</span>
+            </button>
+
+            <button
+              id="nav-tab-config"
+              onClick={() => setActiveTab('config')}
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-[10px] sm:text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap shrink-0 ${
+                activeTab === 'config'
+                  ? (theme === 'deep-space' 
+                      ? 'bg-cyan-600 text-white font-bold shadow-[0_0_12px_rgba(6,182,212,0.4)]' 
+                      : 'bg-cyan-400 text-black font-extrabold shadow-[0_0_12px_rgba(6,182,212,0.5)]')
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <FileCode2 className="w-3.5 h-3.5" />
+              <span>{isTn ? 'مولّد الـ Config' : 'Config Generator'}</span>
             </button>
 
             <button

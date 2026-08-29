@@ -24,6 +24,7 @@ import {
   PRESET_RIG_PROFILES,
   PresetRigProfile,
 } from '../utils/systemScanner';
+import { SystemSpecsDetector } from './SystemSpecsDetector';
 
 interface HardwareSpecsModalProps {
   isOpen: boolean;
@@ -44,10 +45,22 @@ export const HardwareSpecsModal: React.FC<HardwareSpecsModalProps> = ({
   const [scanLog, setScanLog] = useState<string>('');
   const [scanSuccessMessage, setScanSuccessMessage] = useState<string | null>(null);
   const [activePresetId, setActivePresetId] = useState<string | null>(null);
+  const [activeMode, setActiveMode] = useState<'detector' | 'manual'>('detector');
 
   const evaluation = evaluateHardwareRig(form);
 
   if (!isOpen) return null;
+
+  const handleApplyDetectedSpecs = (detected: { gpu: string; cpu: string; ram: string; resolution: string }) => {
+    setForm((prev) => ({
+      ...prev,
+      gpu: detected.gpu || prev.gpu,
+      cpu: detected.cpu || prev.cpu,
+      ram: detected.ram || prev.ram,
+      resolution: detected.resolution ? `${detected.resolution}` : prev.resolution,
+    }));
+    setScanSuccessMessage(`Applied browser hardware probe: ${detected.gpu}`);
+  };
 
   const handleSave = () => {
     onSaveSpecs(form);
@@ -133,8 +146,55 @@ export const HardwareSpecsModal: React.FC<HardwareSpecsModalProps> = ({
           </button>
         </div>
 
-        {/* System Scan Simulation Action Card */}
-        <div className="mt-4 p-3.5 rounded-xl bg-gradient-to-r from-[#141d17] via-[#18181b] to-[#121b14] border border-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.08)]">
+        {/* Mode Switcher Tabs */}
+        <div className="flex items-center gap-2 mt-4 p-1 rounded-xl bg-slate-950 border border-white/10 font-mono text-xs">
+          <button
+            onClick={() => setActiveMode('detector')}
+            className={`flex-1 py-2 px-3 rounded-lg font-bold flex items-center justify-center gap-2 transition cursor-pointer ${
+              activeMode === 'detector'
+                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.2)]'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Zap className="w-3.5 h-3.5 text-cyan-400" />
+            <span>WebGL Hardware Scanner</span>
+          </button>
+          <button
+            onClick={() => setActiveMode('manual')}
+            className={`flex-1 py-2 px-3 rounded-lg font-bold flex items-center justify-center gap-2 transition cursor-pointer ${
+              activeMode === 'manual'
+                ? 'bg-green-500/20 text-green-300 border border-green-500/40 shadow-[0_0_12px_rgba(34,197,94,0.2)]'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Cpu className="w-3.5 h-3.5 text-green-400" />
+            <span>Manual Specs & Presets</span>
+          </button>
+        </div>
+
+        {/* Tab 1: Direct WebGL / Browser Hardware Scanner Component */}
+        {activeMode === 'detector' ? (
+          <div className="mt-4 space-y-4">
+            <SystemSpecsDetector onApplySpecs={handleApplyDetectedSpecs} />
+
+            {/* Currently Staged Active Specs Summary */}
+            <div className="p-3 rounded-xl bg-slate-900/60 border border-white/10 font-mono text-xs">
+              <div className="flex items-center justify-between text-slate-400 text-[10px] uppercase mb-1">
+                <span>Active Profile Stage:</span>
+                <span className="text-green-400 font-bold">Ready to Save</span>
+              </div>
+              <div className="text-slate-200 font-semibold truncate">
+                GPU: <span className="text-white">{form.gpu}</span>
+              </div>
+              <div className="text-slate-300 truncate mt-0.5">
+                CPU: <span className="text-slate-100">{form.cpu}</span> • RAM: <span className="text-slate-100">{form.ram}</span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* System Scan Simulation Action Card */}
+            <div className="mt-4 p-3.5 rounded-xl bg-gradient-to-r from-[#141d17] via-[#18181b] to-[#121b14] border border-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.08)]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-start gap-2.5">
               <div className="w-7 h-7 rounded-lg bg-green-500/20 border border-green-500/40 flex items-center justify-center text-green-400 shrink-0 mt-0.5">
@@ -390,6 +450,8 @@ export const HardwareSpecsModal: React.FC<HardwareSpecsModalProps> = ({
             </select>
           </div>
         </div>
+        </>
+        )}
 
         {/* Footer Actions */}
         <div className="flex items-center justify-between mt-5 pt-3 border-t border-white/10">

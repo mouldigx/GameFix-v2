@@ -97,3 +97,20 @@ export interface CrashLogResult {
   steps: string[];
   proTip: string;
 }
+
+export interface ConfigTweakItem {
+  parameter: string;
+  value: string;
+  reason: string;
+}
+
+export interface GameConfigResult {
+  configFileName: string;
+  configPath: string;
+  engine: string;
+  summary: string;
+  targetGpuTier?: string;
+  configContent: string;
+  installationTip: string;
+  keyTweaks?: ConfigTweakItem[];
+}

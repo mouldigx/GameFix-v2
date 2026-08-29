@@ -6,6 +6,7 @@ import { ChatView } from './components/ChatView';
 import { GameOptimizerView } from './components/GameOptimizerView';
 import { EmergencyFixesView } from './components/EmergencyFixesView';
 import { CrashLogScanner } from './components/CrashLogScanner';
+import { GameConfigGenerator } from './components/GameConfigGenerator';
 import { HardwareSpecsModal } from './components/HardwareSpecsModal';
 import { TourOverlay } from './components/TourOverlay';
 import { AdBanner } from './components/AdBanner';
@@ -39,7 +40,7 @@ const INITIAL_GREETING_TN: ChatMessage = {
 };
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'chat' | 'optimizer' | 'fixes' | 'logs'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'optimizer' | 'config' | 'fixes' | 'logs'>('chat');
   const [isSpecsModalOpen, setIsSpecsModalOpen] = useState(false);
   const [audioMuted, setAudioMuted] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -312,6 +313,14 @@ export default function App() {
 
           {activeTab === 'optimizer' && (
             <GameOptimizerView
+              userSpecs={userSpecs}
+              onOpenSpecsModal={() => setIsSpecsModalOpen(true)}
+              onNavigateToConfig={() => setActiveTab('config')}
+            />
+          )}
+
+          {activeTab === 'config' && (
+            <GameConfigGenerator
               userSpecs={userSpecs}
               onOpenSpecsModal={() => setIsSpecsModalOpen(true)}
             />

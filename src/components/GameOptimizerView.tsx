@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
-import { Flame, Sparkles, Copy, Check, Sliders, Shield, Zap, AlertTriangle, Monitor, Cpu } from 'lucide-react';
+import { Flame, Sparkles, Copy, Check, Sliders, Shield, Zap, AlertTriangle, Monitor, Cpu, FileCode2 } from 'lucide-react';
 import { POPULAR_GAMES } from '../data/gamingKnowledge';
 import { GamePreset, OptimizationResult, UserHardwareSpecs } from '../types';
 
 interface GameOptimizerViewProps {
   userSpecs: UserHardwareSpecs;
   onOpenSpecsModal: () => void;
+  onNavigateToConfig?: (gameName?: string) => void;
 }
 
 export const GameOptimizerView: React.FC<GameOptimizerViewProps> = ({
   userSpecs,
   onOpenSpecsModal,
+  onNavigateToConfig,
 }) => {
   const [selectedGame, setSelectedGame] = useState<GamePreset>(POPULAR_GAMES[0]);
   const [customGameName, setCustomGameName] = useState('');
@@ -218,6 +220,17 @@ export const GameOptimizerView: React.FC<GameOptimizerViewProps> = ({
               </>
             )}
           </button>
+
+          {onNavigateToConfig && (
+            <button
+              type="button"
+              onClick={() => onNavigateToConfig(customGameName.trim() || selectedGame.name)}
+              className="w-full py-2 rounded-lg font-mono text-xs text-cyan-400 bg-cyan-950/40 hover:bg-cyan-900/60 border border-cyan-500/30 transition flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <FileCode2 className="w-3.5 h-3.5" />
+              <span>Generate .ini / .cfg File Instead &rarr;</span>
+            </button>
+          )}
         </div>
 
         {/* Right Column: Settings Output or Default Preset Info */}
